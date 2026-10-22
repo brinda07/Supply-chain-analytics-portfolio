@@ -1,0 +1,17 @@
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Raw/tutorial data is excluded by default; only share files if reuse terms permit
+/data/raw/*
+!/data/raw/.gitkeep
+
+# Local outputs and caches
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+*.log
