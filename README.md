@@ -17,6 +17,7 @@ AI tools may help draft code and summarize validated results. They are not the a
 ## Repository map
 
 - `docs/project-build-guide.md` — detailed build sequence and portfolio advice.
+- `docs/step-by-step-project-instructions.md` — full follow-along manual from data acquisition to publishing.
 - `docs/project-brief.md` — project purpose, scope, assumptions, and open questions.
 - `docs/metric-definitions.md` — KPI definitions and field requirements.
 - `docs/data-dictionary.md` — mapping template to complete after inspecting source files.
@@ -39,4 +40,4 @@ AI tools may help draft code and summarize validated results. They are not the a
 
 ## Before publishing
 
-Replace placeholders with verified details. Do not commit credentials, private email data, or tutorial files unless redistribution is permitted. Keep real findings, estimates, assumptions, and simulated scenario details clearly distinguished. See `docs/project-build-guide.md` for the full build plan.
+Replace placeholders with verified details. Do not commit credentials, private email data, or tutorial files unless redistribution is permitted. Keep real findings, estimates, assumptions, and simulated scenario details clearly distinguished. Follow `docs/step-by-step-project-instructions.md` for the detailed build, and use `docs/project-build-guide.md` as the concise project plan.
