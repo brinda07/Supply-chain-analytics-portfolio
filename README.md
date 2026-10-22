@@ -1,18 +1,77 @@
-# AI-Assisted Supply Chain Order Fulfillment Analysis
+Supply Chain Analytics Portfolio
+Hi, Brinda. This portfolio showcases supply chain analytics projects using Python, SQL, Power BI, HTML, Plotly, and business-focused supply chain planning logic.
 
-> **Status: project scaffold.** The tutorial dataset has not yet been inspected in this repository, so no KPI results or business findings are claimed.
+My goal is to demonstrate how raw operational data can be transformed into actionable supply chain insights, including demand forecasting, forecast accuracy management, inventory optimization, replenishment planning, supplier performance, and S&OP analysis.
 
-## Project question
+Featured Projects
+Project 1: Demand Forecasting & Inventory Planning
+This project uses historical store sales data to build a demand-driven inventory planning framework. The analysis forecasts near-term demand, classifies inventory risk using ABC-XYZ logic, calculates safety stock and reorder points, and identifies high-priority replenishment items.
 
-Which markets, products, or customers show the clearest order-fulfillment risk, and what should an operations team investigate first?
+Inventory Planning Dashboard
 
-This portfolio project adapts the workflow in the supplied video: order-header and order-line CSVs flow through an automated intake into PostgreSQL, then into a documented analysis and dashboard. The video describes a fictional retailer and tutorial-provided files. Results from those files must not be presented as real operating-company performance.
+Key outputs:
 
-## What this project is—and is not
+Forecasted next 30-day demand by store-family
+ABC-XYZ inventory classification
+Safety stock and reorder point calculation
+Priority replenishment recommendation table
+Power BI dashboard for executive review
+Tools used: Python, Pandas, NumPy, Power BI, GitHub, VS Code
 
-The goal is to demonstrate supply-chain analysis, data quality, SQL, workflow automation, dashboard communication, and responsible AI-assisted work. The initial scope is **order fulfillment**, not proven inventory optimization. Inventory conclusions require appropriate stock, replenishment, and lead-time data. On-time and OTIF measures will only be calculated if the source includes the required promised/actual delivery dates and delivered quantities.
+View Project Folder
+Download Dashboard PDF
 
-AI tools may help draft code and summarize validated results. They are not the authority for metric definitions or final numbers; generated outputs must be independently checked.
+Project 2: Demand Planning & Forecast Accuracy Management
+This project simulates a realistic monthly demand-planning process for 100 high-volume SKUs. It compares six explainable forecast models through rolling backtesting, uses chronological holdout validation, measures WAPE, MAPE, bias, MAE, and Forecast Value Added, and prioritizes high-risk SKUs for planner review.
+
+Forecast Model Comparison
+
+Key outputs:
+
+52-week training window and 13-week forecast horizon
+Six forecast models compared through rolling backtesting
+Independent holdout validation with no future-data leakage
+Champion-model selection by SKU
+Forecast bias and FVA analysis
+Planner exception queue based on demand volume, error, and bias
+Interactive HTML and Plotly dashboard published with GitHub Pages
+Holdout results: 34.3% WAPE, 65.7% forecast accuracy, +3.1% bias, and positive FVA for 75 of 100 SKUs.
+
+Tools used: Python, Pandas, NumPy, HTML/CSS/JavaScript, Plotly, Matplotlib, GitHub Pages
+
+Open Live Dashboard
+View Project Folder
+
+Portfolio Projects
+Project	Focus Area	Tools	Status
+Project 1: Demand Forecasting & Inventory Planning	Forecasting, inventory optimization, safety stock, reorder point	Python, Power BI	Completed
+Project 2: Demand Planning & Forecast Accuracy Management	Rolling backtesting, WAPE, bias, FVA, planner exceptions	Python, HTML, Plotly	Live
+Project 3: Supplier Performance & Spend Analysis	Supplier scorecard, spend analysis, sourcing risk	Python, Power BI, SQL	Planned
+Project 4: S&OP Scenario Planning Dashboard	Demand-supply gap, inventory coverage, revenue risk	Power BI, Python	Planned
+Skills Demonstrated
+Demand forecasting and forecast accuracy management
+Rolling backtesting and chronological model validation
+WAPE, MAPE, bias, MAE, and Forecast Value Added
+Exception-based demand planning
+Inventory planning and ABC-XYZ classification
+Safety stock and reorder point modeling
+Data cleaning and transformation
+Power BI, HTML, and Plotly dashboard design
+Business recommendation writing
+GitHub project documentation
+Tools
+Python
+Pandas
+NumPy
+HTML / CSS / JavaScript
+Plotly
+Power BI
+SQL
+Excel
+GitHub
+VS Code
+Contact
+Open to Senior Supply Chain Analyst, Demand Planning Analyst, and Supply Chain Analytics roles.
 
 ## Repository map
 
