@@ -1,25 +1,28 @@
-# Metric Definitions and Field Requirements
+# Metric Definitions — Synthetic Dataset
 
-Complete the **availability** and **business-rule** columns after inspecting the actual files. These are proposed definitions, not findings.
+These measures are computable from the generated schema when implemented as specified. Any values produced describe **only generated records**. Do not use them as evidence of a real company’s performance.
 
-| Metric | Proposed definition | Required fields | Availability / caveat |
+| Metric | Grain | Definition | Eligibility / notes |
 |---|---|---|---|
-| Order count | Count of distinct eligible order IDs. | Order ID; status if canceled orders can be excluded. | TBD; define cancellation treatment. |
-| Unit fill rate | Sum of delivered units ÷ sum of ordered units. | Ordered quantity and delivered quantity at line level. | TBD; do not infer delivered quantity from ordered quantity. |
-| In-full order rate | Eligible orders for which every line is delivered in full ÷ eligible orders with delivery data. | Order ID, product/line identity, ordered and delivered quantities. | TBD; confirm partial and split-shipment rules. |
-| On-time order rate | Eligible orders delivered by the agreed promised date ÷ eligible assessable orders. | Promised date and actual delivery date, with order-level rule. | TBD; order date alone is not a promise date. |
-| OTIF | Share of eligible orders meeting both the on-time and in-full conditions. Calculate the intersection directly at order level. | Promised date, actual delivery date, ordered and delivered quantities. | TBD; document date window, split shipments, exclusions, and missing data. |
-| Lead time | Actual delivery date minus order date; specify calendar or business days. | Order date and actual delivery date. | Descriptive elapsed time; not necessarily a delivery-promise measure. |
-| Order value | Sum of line quantity × unit price, under a documented order-value rule. | Quantity, price, currency, and any adjustments/discounts. | TBD; never sum amounts across currencies without a documented conversion basis. |
+| Submitted orders | Order | Count distinct `order_id` across all orders. | Includes delivered and cancelled; state the period/filter. |
+| Cancellation rate | Order | Cancelled orders ÷ all submitted orders. | Use `order_status = 'cancelled'`; display denominator. |
+| On-time rate | Order | Delivered orders with `actual_delivery_date <= promised_delivery_date` ÷ delivered orders with both dates. | Exclude cancelled orders; dates are synthetic. |
+| Line unit fill rate | Order line / units | Sum `delivered_qty` ÷ sum `ordered_qty` for delivered orders. | Exclude cancelled orders from this service calculation; state line/date filters. |
+| In-full order rate | Order | Delivered orders where every line has `delivered_qty >= ordered_qty` ÷ delivered orders. | Compute line fulfillment first, then aggregate to order. |
+| OTIF | Order | Delivered orders that are both on-time and in-full ÷ delivered assessable orders. | Calculate the joint condition directly at order grain. |
+| Lead time | Order | `actual_delivery_date - order_date` in calendar days. | Only for delivered orders; descriptive, not equivalent to promised-date performance. |
+| Ordered line value | Order line | `ordered_qty * unit_price_local`, grouped and reported by `currency_code`. | A demand-value measure based on fictional prices; do not combine USD and INR without a documented FX rate. |
 
-## Rules to record for every KPI
+## Calculation rules
 
-- Unit of analysis and data grain.
-- Numerator and denominator.
-- Time period and timezone/date boundary.
-- Filters and treatment of canceled, returned, incomplete, or undelivered orders.
-- Treatment of missing/invalid dates and quantities.
-- Whether percentages are weighted by units, lines, or orders.
-- Data source and validation query.
+- A cancelled order is counted in submitted orders and the cancellation numerator, but excluded from delivery/on-time/in-full/OTIF metrics.
+- A delivered order is **in full** only if every order line meets or exceeds ordered quantity. Do not let over-delivery on one SKU offset a shortage on another.
+- An order is **on time** when its order-level actual delivery date is on or before its promised delivery date.
+- OTIF is the direct intersection of those two order-level flags; do not estimate it by multiplying separate overall rates.
+- Show the number of eligible orders whenever a percentage is shown. Rates with different eligibility denominators are not directly comparable.
+- Use the order date for cohort month unless the chart explicitly says otherwise. Do not mix order-month and delivery-month groupings.
+- The test fixtures contain intentional errors and must never be used in KPI calculations.
 
-For OTIF, do not use a product of the overall on-time rate and in-full rate as a substitute for the direct share of orders meeting both conditions unless the project explicitly justifies and labels that approximation. A partially delivered order may count as not in full even if some lines were fulfilled.
+## Synthetic-data interpretation warning
+
+The generator intentionally varies late-delivery and partial-fulfillment probabilities by market, carrier, and product category to make the example useful for segmentation and validation practice. A finding from this dataset is a demonstration that the analysis can identify a programmed pattern. It is not an independent discovery, a causal explanation, or a real benchmark.

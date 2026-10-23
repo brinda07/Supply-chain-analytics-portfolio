@@ -1,0 +1,6 @@
+order_id,customer_id,carrier_id,market,order_date,promised_delivery_date,actual_delivery_date,order_status,currency_code
+TEST-001,CUS-0001,CAR-US-01,US,2026-01-03,2026-01-06,2026-01-05,delivered,USD
+TEST-001,CUS-0001,CAR-US-01,US,2026-01-03,2026-01-06,2026-01-05,delivered,USD
+TEST-002,CUS-0002,CAR-US-02,US,not-a-date,2026-01-07,2026-01-08,delivered,USD
+TEST-003,CUS-0003,CAR-US-01,MARS,2026-01-04,2026-01-08,2026-01-07,delivered,XYZ
+,CUS-0004,CAR-US-01,US,2026-01-05,2026-01-09,2026-01-08,delivered,USD

@@ -1,532 +1,514 @@
-# Step-by-Step Project Instructions
+# Step-by-Step Instructions: Synthetic Order Fulfillment Analytics
 
-This manual is for building the project in this repository: **AI-Assisted Supply Chain Order Fulfillment Analysis**. Follow the steps in order. The guide deliberately does not assume the tutorial CSVs contain promised delivery dates, actual delivery dates, delivered quantities, inventory balances, or supplier lead times. You will inspect the real files first and only claim results they support.
+This guide now uses the **fully synthetic dataset included in this repository**. It does not redistribute the tutorial creator’s restricted dataset. Follow the phases in sequence. The records are useful for practicing a reproducible analytics workflow, but any results describe only a programmed example—not a real company, market, customer, carrier, or industry benchmark.
 
-## The finished project should demonstrate
+## What you will build
 
-By the end, a reviewer should be able to see that you can:
+A portfolio demonstration that uses generated order, order-line, customer, product, and carrier data to practice:
 
-1. Translate a supply-chain scenario into a precise analysis question.
-2. Inspect and document unfamiliar data before using it.
-3. Build a repeatable data load into a relational database.
-4. Write SQL and calculate only defensible KPIs.
-5. Use AI to accelerate work while checking its output.
-6. Build a clear dashboard and make a proportionate recommendation.
-7. Explain project limitations, reproduce the work, and discuss your own decisions.
+- reproducible data generation;
+- relational modeling and SQL;
+- ETL automation with n8n;
+- data-quality and failure-path testing;
+- order-level fulfillment KPIs;
+- AI-assisted drafting with independent validation;
+- a dashboard and an honest business-style case presentation.
 
-## Phase 0 — Set up your workspace and define your rules
+**Do not describe this as a real-company inventory optimization.** There are no inventory balances, stock movements, purchase orders, supplier lead times, or actual carrier events in the dataset. The synthetic generator intentionally programs variation by carrier, market, and product category, so resulting patterns are practice examples, not discoveries about reality.
 
-### Step 0.1: Clone the repository
+## Phase 1 — Set up and understand the repository
 
-On a computer with Git installed, open a terminal and run:
+### 1.1 Clone the repository
+
+If you do not already have the local project folder, open a terminal and run:
 
 ```bash
-git clone https://github.com/brinda07/supply-chain-fulfillment-ai-portfolio.git
-cd supply-chain-fulfillment-ai-portfolio
+git clone https://github.com/brinda07/Supply-chain-analytics-portfolio.git
+cd Supply-chain-analytics-portfolio
 ```
 
-The repository is private. Sign in to GitHub before cloning. If you do not use the terminal, download the repository ZIP from GitHub, extract it, and work in that folder. When you make changes, keep a backup copy or learn the basic commit/push steps near the end of this guide.
+The repository may be private. Sign in to GitHub before cloning. If you prefer not to use Git yet, download the repository ZIP, extract it, and work inside the extracted directory. Avoid editing two separate copies of the repository.
 
-### Step 0.2: Keep the project data private until you know the reuse terms
+### 1.2 Read the project framing first
 
-Find the tutorial files through the video description or the creator’s linked source. Record the source URL and download date in `docs/data-dictionary.md`. Read any data-license or reuse notes. Do not upload raw data, private emails, customer information, credentials, or the creator’s paid material to GitHub unless the terms clearly allow redistribution.
+Read these files in order:
 
-Keep local source data under `data/raw/`. The repository ignores files in that folder by default. This allows you to analyze local data without publishing it. If the tutorial offers no downloadable files, do not substitute invented values and present them as measured. First ask the creator/source for the files or select a legitimate, documented dataset and revise the project brief accordingly.
+1. `README.md` — portfolio-facing overview.
+2. `docs/project-brief.md` — question, scope, and success criteria.
+3. `docs/synthetic-data-card.md` — how the generated data may and may not be interpreted.
+4. `docs/metric-definitions.md` — exact denominators and formulas.
+5. `docs/data-dictionary.md` — field names, row grains, and relationships.
 
-### Step 0.3: Decide the analysis question and keep it narrow
+The project should be labeled “synthetic dataset demonstration” wherever you show a dashboard, screenshot, video, or portfolio summary. Do not use fabricated stakeholder quotes, interviews, actual business impact, or real-world conclusions.
 
-Use this question as the project’s anchor:
+### 1.3 Generate or regenerate the data
 
-> Which markets, products, or customers show the clearest order-fulfillment risk, and what should an operations team investigate first?
-
-Use the video’s fictional business only as a scenario. In your documentation, say the case is based on tutorial-provided data and a fictional scenario unless you independently establish otherwise. Do not say a real company had the issue, that you interviewed real employees, or that a process change was implemented if none of that happened.
-
-### Step 0.4: Complete the project brief
-
-Edit `docs/project-brief.md`. Replace or resolve the open questions after you inspect the files. State:
-
-- the business question;
-- the dataset source and what it represents;
-- the tools you actually plan to use;
-- what is in scope and explicitly out of scope;
-- what stakeholders are hypothetical personas versus real interviewees;
-- what evidence is still missing.
-
-Avoid setting numeric improvement targets before you have a baseline or a real stakeholder target. Mark the project **tutorial-data / simulated case study** if that is accurate.
-
-**Checkpoint:** Someone unfamiliar with the project can read the brief and tell what question you will answer and what you will not claim.
-
-## Phase 1 — Obtain, inventory, and profile the data
-
-### Step 1.1: Save the untouched files locally
-
-Create the folder if it does not exist:
+From the repository root, run:
 
 ```bash
-mkdir -p data/raw
+python3 --version
+python3 src/generate_synthetic_dataset.py
 ```
 
-Download the files and place exact, untouched copies in `data/raw/`. Do not change column names or overwrite source values at this point. If you receive ZIP files, keep the original ZIP too, unless its reuse terms prohibit storing it.
+On Windows, `python` may be the command instead of `python3`:
 
-### Step 1.2: Make a file inventory
-
-For each file, write down the exact filename, file type, size, source, download date, and what you think one row represents. Then inspect the headers and rows. You can use Excel/LibreOffice or a text editor, but avoid opening a large CSV in a spreadsheet and re-saving it: spreadsheets may silently change IDs, dates, or leading zeroes.
-
-For a quick Python inspection, run this from the repository root:
-
-```bash
+```powershell
 python --version
+python src/generate_synthetic_dataset.py
 ```
 
-If the command is not found, try `python3 --version`. For a first look at every CSV using Python’s standard library, run:
+The generator requires only the Python standard library. It writes five clean CSVs and a manifest to `data/synthetic/`, plus separate invalid-input fixtures under `data/fixtures/`. It uses a fixed seed, so rerunning the same script should reproduce the same records.
+
+Expected current file counts are listed in `data/synthetic/README.md` and `dataset_manifest.json`. If you change the script or seed, rerun it and update those documents. Don’t manually edit generated CSVs; change the generator or create a separate documented fixture instead.
+
+### 1.4 Run structural validation
+
+Run:
 
 ```bash
-python - <<'PY'
+python3 src/validate_synthetic_dataset.py
+```
+
+The validator checks expected columns, primary keys, foreign keys, market/currency consistency, date logic, quantity rules, and that orders have lines. It deliberately does **not** calculate or report service KPI results. Resolve any validation error before database loading.
+
+The test fixtures are intentionally invalid. Do not run the structural validator against them and do not copy them into `data/synthetic/`. Their purpose is to test how your n8n workflow rejects bad records.
+
+### 1.5 Inspect the files yourself
+
+Open each file or print its header and a few sample rows. Confirm that the files match the data card:
+
+- `orders.csv`: one row per order.
+- `order_lines.csv`: one row per order-product line.
+- `customers.csv`: one row per customer.
+- `products.csv`: one row per SKU.
+- `carriers.csv`: one row per carrier.
+
+A useful short command is:
+
+```bash
+python3 - <<'PY'
 import csv
 from pathlib import Path
-
-for path in sorted(Path('data/raw').glob('*.csv')):
-    print(f'\n=== {path.name} ===')
-    with path.open('r', encoding='utf-8-sig', newline='') as f:
-        reader = csv.DictReader(f)
-        print('columns:', reader.fieldnames)
-        for i, row in enumerate(reader):
+for p in sorted(Path('data/synthetic').glob('*.csv')):
+    with p.open(encoding='utf-8', newline='') as f:
+        r = csv.DictReader(f)
+        print('\n', p.name, r.fieldnames)
+        for _, row in zip(range(2), r):
             print(row)
-            if i == 2:
-                break
 PY
 ```
 
-If the CSV uses a different encoding or delimiter, note what you changed. Never quietly guess at the data. Record the file-level notes and field observations in `docs/data-dictionary.md`.
+Use `docs/data-dictionary.md` to learn field meanings. Note that `orders.csv` has the dates and status at order grain, while quantities are at line grain. This difference matters when calculating order-level OTIF.
 
-### Step 1.3: Establish the row grain and keys
+**Checkpoint:** the generator runs, the structural validator passes, and you can explain the grain and key of each CSV.
 
-For every CSV, answer in writing:
+## Phase 2 — Understand the synthetic data before building charts
 
-- What exactly does one row represent?
-- What field or combination of fields should uniquely identify a row?
-- Is that key actually unique?
-- Which key links this file to another one?
-- Are IDs numeric measurements or identifiers? Treat IDs as text unless there is a reason to do otherwise; an ID such as `000123` must not become `123`.
-- Are dates order placement dates, promised delivery dates, shipped dates, or actual delivery dates? Similar-looking dates are not interchangeable.
-- Are quantities ordered, shipped, or delivered? Do not assume they mean the same thing.
-- Are prices in USD, INR, or another currency? Do not add unlike currencies.
+### 2.1 Know what was designed into the generator
 
-A typical tutorial may have an order-header file (one row per order) and an order-line file (one row per order-product line), but verify this. If one order has several lines, joining headers to lines repeats header attributes. Always account for this when counting orders or summing order-level values.
+The generator deliberately sets different late-delivery probabilities for fictional carriers and markets, different partial-fulfillment probabilities for markets/categories, and a small cancellation probability. These are **scenario controls**. They are present so you can practice analysis and test whether your code detects the underlying programmed variations.
 
-### Step 1.4: Profile quality before loading
+Your portfolio language must say “in this synthetic sample” or “the generated records.” Don’t write that the results establish typical delivery performance or that a carrier/category actually underperforms in the real world. A segment comparison is not a causal analysis.
 
-For each file, record:
+### 2.2 Write your analysis questions
 
-- number of rows and columns;
-- missing values by column;
-- duplicate candidate keys;
-- distinct counts for IDs and categories;
-- invalid or unparsable dates;
-- non-numeric quantities or prices;
-- negative or zero quantities and whether they represent returns/corrections;
-- unexpected currencies, countries, or status values;
-- unmatched order, customer, or product IDs across files.
+Use these questions as exercises:
 
-You can do these checks in Python, SQL, or a spreadsheet. Save the method and the actual result, not merely “data checked,” in `docs/data-dictionary.md`. If you clean anything, preserve the untouched raw file and document the rule in a new clean-data step.
+1. How do on-time, in-full, and OTIF rates vary by market and order month in the generated data?
+2. Which fictional carrier has the lowest on-time rate, and how many delivered orders are in that group?
+3. Which SKU/category has the most incomplete lines or undelivered units?
+4. How do cancellation rates vary by market and month?
+5. Does the SQL workflow return the expected data grain and handle the intentionally invalid fixtures?
 
-**Checkpoint:** You can state the grain, key, date coverage, important fields, and main data-quality caveats for every source file.
+The business-like recommendation should be explicitly hypothetical, such as: “In an actual operation, this segment would be a candidate for investigation. The synthetic records do not establish a real operational issue.”
 
-## Phase 2 — Decide which metrics the files really support
+### 2.3 Use the available measures correctly
 
-### Step 2.1: Complete the KPI availability column
+Definitions are in `docs/metric-definitions.md`. Follow these rules:
 
-Open `docs/metric-definitions.md`. For every proposed metric, mark it **supported**, **not supported**, or **supported with a specific limitation** based on actual fields. Include exact source column names and normalized names.
+- Count orders using distinct order IDs, not line rows.
+- Exclude cancelled orders from delivery-service denominators; report cancellations separately.
+- Calculate order in-full status by checking **every line**; extra units for one SKU must not offset a shortage in another.
+- Calculate OTIF as the direct intersection of on-time and in-full at order level.
+- Calculate unit fill rate as total delivered units ÷ total ordered units for delivered orders, and label it a unit-weighted measure.
+- Use the order month consistently for monthly cohorts unless a visual explicitly uses delivery month.
+- Show denominators or eligible order counts with percentages.
+- Keep USD and INR amounts separate. This dataset has no historical FX table.
 
-The minimum useful project can still be good even if OTIF is not available. You can analyze order counts, order-line quantities, product mix, order value (only if defensible), or lead time (only if order and delivery dates exist). State what you can and cannot calculate.
+**Checkpoint:** you can distinguish order count, line count, unit fill rate, in-full order rate, on-time rate, and OTIF.
 
-### Step 2.2: Freeze the KPI rules before exploring segment results
+## Phase 3 — Build the PostgreSQL database
 
-For each metric you will use, write down:
+### 3.1 Choose a database environment
 
-- the unit of analysis (line, order, shipment, or customer);
-- numerator and denominator;
-- included and excluded statuses;
-- how missing fields are treated;
-- the measurement period and date field;
-- whether the result is unit-weighted, line-weighted, or order-weighted;
-- how split shipments and returns are handled.
+Use a local PostgreSQL install or a hosted PostgreSQL service you control. Keep the database private and use project-only credentials. Current hosted-service pricing, limits, and security settings may change; check them directly if you use a hosted service.
 
-Use these definitions only when fields exist:
+The example commands below assume `psql` is installed and your local PostgreSQL account can create databases. If not, use your database provider’s SQL editor/console and CSV import feature, or install PostgreSQL using its current official installer.
 
-- **Unit fill rate:** total delivered units ÷ total ordered units.
-- **In-full order rate:** share of eligible orders for which each required line is delivered in full.
-- **On-time order rate:** share of eligible orders delivered on or before the agreed promised date.
-- **OTIF:** share of eligible orders that satisfy both the on-time and in-full conditions. Calculate at order level, not as a guess from separate rates.
-- **Lead time:** actual delivery date minus order date. This measures elapsed time, not whether a promise was met.
-
-An order date does not establish its promised date. If no promised date exists, do not call elapsed lead time an on-time rate. If no delivered quantity exists, do not infer fill rate from ordered quantity. If there is no on-hand inventory history, do not claim to measure stockouts, inventory turnover, safety stock, or reorder points.
-
-### Step 2.3: Fix the analysis cohort
-
-Decide which date defines the month for each analysis (order date, delivery date, or promised date) and why. Decide if incomplete or canceled records are excluded or reported separately. Make sure markets are compared over comparable periods and with the same denominator rules. Write this in the KPI definitions before you build charts.
-
-**Checkpoint:** Each KPI in the proposed dashboard can be traced to fields that actually exist and a written calculation rule.
-
-## Phase 3 — Design and create the database
-
-### Step 3.1: Choose a simple environment
-
-Use a PostgreSQL environment you can access safely. For a beginner, choose either a local PostgreSQL installation or a hosted PostgreSQL service. Keep this project’s development database separate from any personal or work database. Save connection credentials in the service’s credential manager or a local environment file that is excluded by `.gitignore`. Never paste a password into a SQL file, n8n export, Git commit, screenshot, or AI prompt.
-
-If you choose a hosted database, check its current free-tier/retention/security terms yourself; they can change. Do not enable public access to the database just to make the demo work. Use a restricted password and the minimum privileges needed.
-
-### Step 3.2: Create a database and staging tables
-
-Create a database such as `supply_chain_portfolio`. Use separate staging tables that preserve source values as text where practical; typed clean views/tables can follow after validation. Add a `batch_id`, `source_file`, and `loaded_at` to trace each record to its import.
-
-The exact staging columns must be based on the real files. Do not copy a guessed schema from a tutorial. Keep identifiers as `TEXT`. If you use PostgreSQL directly, inspect its `CREATE TABLE` and `COPY` capabilities and load files into staging, then check the counts. Alternatively, build the n8n workflow first and have it insert into the staging tables.
-
-Create a load audit table with one row per input file/batch. At minimum store filename, batch ID, received/loaded timestamp, input row count, accepted row count, rejected row count, and status.
-
-### Step 3.3: Create clean analytical tables or views
-
-After staging data is profiled, standardize names and types in `sql/02_clean_views.sql` (or an equivalent clearly named file). Keep explicit grains:
-
-- `orders`: one row per order, if the header contains one record per order.
-- `order_lines`: one row per order-product line, if the file is actually at that grain.
-- `customers`: one row per customer if a reference file exists.
-- `products`: one row per product if a reference file exists.
-
-If the source has shipment-level details, consider a separate `shipments` table instead of pretending the whole order shipped once. Add primary/foreign keys only after checking that the source supports them. Create a documented mapping from original column names to clean names.
-
-### Step 3.4: Verify the model
-
-Run checks before computing KPIs:
-
-- staging row counts equal source-file row counts;
-- each declared unique key is unique, or duplicates are documented;
-- each order line joins to an order, or orphan rows are reported;
-- each customer/product reference joins where expected;
-- no join unexpectedly multiplies header-level order counts or values;
-- date and quantity casts do not silently create nulls.
-
-Keep the SQL checks in `sql/` so they can be re-run. Add actual results to the data-quality section in `docs/data-dictionary.md`.
-
-**Checkpoint:** You can rebuild the clean layer from staging, and the row counts and joins reconcile.
-
-## Phase 4 — Build the n8n workflow from a safe first version
-
-The video demonstrates email attachments, but for a portfolio project begin with a manual or file-based trigger. This is easier to reproduce and avoids exposing a personal inbox. If you later want the email automation skill in the portfolio, add it as a separate version using a dedicated test inbox with dummy messages.
-
-### Step 4.1: Create a workflow and name it clearly
-
-In n8n, create a workflow named `Portfolio — Order CSV to PostgreSQL`. Record the n8n version/date if it matters for reproduction. Use the actual n8n interface and node labels available to your account; names may change over time.
-
-### Step 4.2: Add nodes in a controlled sequence
-
-Build the workflow with equivalent nodes for these jobs:
-
-1. **Manual Trigger** — lets you test one known input repeatedly.
-2. **Read File / Select File** — obtains one CSV file. If the workflow environment cannot access your local disk, use its supported upload/storage method; do not expose a filesystem path or database publicly.
-3. **Set batch metadata** — add a generated batch ID, source filename, and ingestion timestamp.
-4. **Switch / IF: identify file type** — route order header, order lines, and reference files to their own mappings. Stop with a clear error on an unknown filename/schema.
-5. **Extract/parse CSV** — produce one structured item per row, preserving IDs as text where possible.
-6. **Normalize fields** — trim strings, standardize names, parse dates in the documented format, and cast quantities only after validation.
-7. **Validate** — check required columns, nonempty keys, valid dates, numeric ranges, allowed categories/currencies, and duplicate keys. Route invalid rows to a rejection branch; do not silently discard them.
-8. **Insert to PostgreSQL staging** — use parameterized database operations or the supported PostgreSQL node; never concatenate untrusted CSV text into SQL strings.
-9. **Write load audit** — record counts, batch ID, and success/failure. Ensure input rows reconcile to accepted plus rejected rows.
-10. **Error branch** — preserve useful error details without logging credentials or private values.
-
-Use one workflow per file type if that is simpler to understand than a complicated router. Use consistent batch IDs when several related files belong to one load.
-
-### Step 4.3: Test failure and rerun behavior
-
-Test at least these cases:
-
-- one valid file;
-- a file with a missing required column;
-- one invalid date or quantity;
-- a duplicate key;
-- an unknown filename;
-- the same file loaded twice;
-- a database connection/load failure.
-
-For each case, verify what the workflow accepts, rejects, records in the audit log, and displays as an error. Loading the same batch again must not silently double records. Use a file hash/batch identifier or a staging-and-merge design to make reruns safe.
-
-### Step 4.4: Export safely
-
-Save a workflow export under `n8n/` only after removing credentials, email addresses, private URLs/hostnames, and other sensitive settings. Re-open the exported JSON as text and search for terms such as `password`, `token`, `secret`, and your email address. Keep any actual n8n credentials in the n8n credential store, not in Git.
-
-**Checkpoint:** You can show a valid run and a rejected/error run, with clear audit counts and no duplicate records after a deliberate rerun.
-
-## Phase 5 — Write SQL and validate the numbers
-
-### Step 5.1: Put all business logic in version control
-
-Write the data cleaning, joins, and KPI logic as named SQL files under `sql/`. The dashboard or AI spreadsheet can use the SQL output, but should not be the only place the formulas exist. Add a short comment above each query stating its grain and assumptions.
-
-### Step 5.2: Build order-level measures at order grain
-
-If order-line data is joined to order-header data, first classify or aggregate line facts per order. Do not count a header once per line. Do not assess “in full” by comparing only total delivered units with total ordered units when a shortage on one SKU could be offset by an over-delivery on another. Prefer checking each line against its ordered quantity and then combining the line results at order level.
-
-A conceptual order-level SQL pattern, **only if the normalized source really has these fields**, is:
-
-```sql
--- clean_orders: one row per order, with market, promised_date, actual_delivery_date
--- clean_order_lines: one row per order-product line, with ordered_qty, delivered_qty
-WITH line_status AS (
-    SELECT
-        order_id,
-        product_id,
-        ordered_qty,
-        delivered_qty,
-        CASE
-            WHEN ordered_qty IS NOT NULL AND delivered_qty IS NOT NULL
-             AND delivered_qty >= ordered_qty THEN TRUE
-            ELSE FALSE
-        END AS line_in_full
-    FROM clean_order_lines
-),
-order_status AS (
-    SELECT
-        order_id,
-        BOOL_AND(line_in_full) AS order_in_full
-    FROM line_status
-    GROUP BY order_id
-),
-orders_assessed AS (
-    SELECT
-        o.order_id,
-        o.market,
-        o.promised_date,
-        o.actual_delivery_date,
-        s.order_in_full,
-        CASE
-            WHEN o.promised_date IS NOT NULL
-             AND o.actual_delivery_date IS NOT NULL
-            THEN o.actual_delivery_date <= o.promised_date
-            ELSE NULL
-        END AS order_on_time
-    FROM clean_orders AS o
-    JOIN order_status AS s USING (order_id)
-)
-SELECT
-    market,
-    COUNT(*) FILTER (WHERE order_on_time IS NOT NULL AND order_in_full IS NOT NULL)
-        AS assessable_orders,
-    AVG(order_on_time::int) FILTER (
-        WHERE order_on_time IS NOT NULL AND order_in_full IS NOT NULL
-    ) AS on_time_rate,
-    AVG(order_in_full::int) FILTER (
-        WHERE order_on_time IS NOT NULL AND order_in_full IS NOT NULL
-    ) AS in_full_rate,
-    AVG((order_on_time AND order_in_full)::int) FILTER (
-        WHERE order_on_time IS NOT NULL AND order_in_full IS NOT NULL
-    ) AS otif_rate
-FROM orders_assessed
-GROUP BY market;
-```
-
-This is a pattern, not a drop-in query. Adapt names, exclusions, and the denominator to the dataset. Confirm that all lines for each order are present. If an order can ship in multiple shipments, the rule for actual delivery must reflect the agreed customer definition—often completion of the final required line, but only shipment-level records can establish that. Do not run this if promised date, actual delivery date, or delivered quantity is missing. Record OTIF as **not measurable from available fields** instead.
-
-### Step 5.3: Produce at least three useful analyses
-
-Choose based on the fields available:
-
-1. **Trend:** supported service KPI by month and market.
-2. **Segment drivers:** incomplete orders/units by product or customer, if the fields exist.
-3. **Prioritization:** compare both rate and impact volume so a tiny denominator does not dominate the story.
-
-For each query, save the SQL, result export or screenshot (without sensitive data), and one sentence describing what decision the result could inform. If the analysis has no delivery status, switch to supported descriptive questions rather than inventing a service KPI.
-
-### Step 5.4: Independently verify
-
-Choose several orders from different categories and trace them from raw records → clean records → SQL classification. Calculate their status manually in a spreadsheet or small Python snippet. Compare totals with a second query or independently grouped calculation. Investigate every disagreement.
-
-Test the following invariants where relevant:
-
-- percentages are between 0 and 1;
-- OTIF cannot exceed on-time or in-full rates when calculated with the same assessable-order denominator;
-- accepted plus rejected rows equal input rows;
-- no order is counted multiple times because of line joins;
-- unlike currencies are not combined;
-- missing promise dates are not silently counted as on-time or late.
-
-Keep the validation method and result in `tests/` or in the documentation. Never report a metric only because an AI tool produced a plausible-looking number.
-
-**Checkpoint:** Every published KPI is reproducible from a version-controlled query and has at least one independent validation check.
-
-## Phase 6 — Use AI as an auditable assistant
-
-### Step 6.1: Use bounded prompts
-
-Give the model a schema, the KPI definition, and a small task. Ask it to list missing fields and assumptions before generating code. Do not give it private credentials, customer personal data, private email contents, or unrestricted database access.
-
-Example prompt:
-
-> Use only the table and column names below. First identify missing fields needed for the requested KPI. If the KPI cannot be calculated, say so and do not invent substitutes. Draft SQL to calculate [supported metric] by [dimension] at [grain]. State the denominator and exclusions. Include a query that returns example rows so I can manually validate the classifications.
-
-### Step 6.2: Keep the evidence
-
-For each significant AI-assisted task, record in `docs/ai-usage-log.md`:
-
-- date and tool;
-- task and prompt summary;
-- what output the tool produced;
-- exactly what you changed;
-- how you validated it;
-- whether you accepted or rejected its suggestions;
-- any privacy or data-use concern.
-
-Save the final checked query/code in the repository. Don’t paste an entire model chat log if it contains secrets, private data, or irrelevant personal content.
-
-### Step 6.3: Make AI contribution visible without overselling it
-
-A strong portfolio example is: “AI drafted a query; I corrected the grain and exclusion logic, then checked it against a second calculation and manually reviewed sample orders.” Only say this if that is what you did. A prompt screenshot alone does not demonstrate that the result is correct.
-
-**Checkpoint:** A reviewer can tell which parts AI assisted with, what decisions you made, and how you checked the output.
-
-## Phase 7 — Build the dashboard and story
-
-### Step 7.1: Sketch before building
-
-On paper or in a simple wireframe, decide the audience and the first question the dashboard should answer. Keep it to two or three pages:
-
-1. **Overview:** order count and supported KPIs, trend over time, market filter, and the period/data-coverage note.
-2. **Where to investigate:** ranked products/customers/markets by failure count and affected volume, if supported.
-3. **Data quality (optional):** missing/invalid rows, rejected rows, and KPI availability notes.
-
-Do not create cards for metrics the data cannot support. If the dataset contains only order headers and no outcome fields, make an exploratory order profile rather than a fake fulfillment scorecard.
-
-### Step 7.2: Design for clear interpretation
-
-- Put metric names, units, period, and denominator near the visual.
-- Label currencies and keep currencies separate.
-- Show the number of eligible observations alongside a percentage.
-- Avoid overemphasizing a segment with very few orders; provide a volume context.
-- Use consistent date filters and label which date controls each trend.
-- Put definitions in a tooltip, subtitle, or linked KPI page.
-- Do not imply that association is proof of causation.
-
-### Step 7.3: Reconcile dashboard totals
-
-Compare every dashboard card to the SQL output for the same filters and period. Test slicers one at a time. Add the dashboard source file, screenshots, or safe share link under `dashboard/`; do not publish data or a link that reveals private database credentials.
-
-**Checkpoint:** Dashboard totals reconcile to SQL, and a reader can understand each metric without relying on a verbal explanation.
-
-## Phase 8 — Convert analysis into a recommendation
-
-### Step 8.1: Keep a findings log
-
-For every finding, record:
-
-- finding ID;
-- plain-language statement;
-- exact query/KPI/chart that supports it;
-- how large the affected group is;
-- confidence and limitation;
-- what action it suggests investigating.
-
-Example structure (do not copy as a result): “During [period], [segment] had [measured result] across [N] eligible orders. This suggests [carefully stated operational question], but the available fields do not establish [cause].”
-
-### Step 8.2: Make one prioritized recommendation
-
-Choose an action that matches the evidence and can be tested. If a product appears frequently on incomplete orders, recommend reviewing stock/replenishment records for that product—not automatically increasing safety stock. If on-time performance is low but you lack shipment/carrier/supplier data, recommend investigating the missing process records rather than blaming the carrier.
-
-For each recommendation, state owner role (proposed if fictional), next step, effort/risk if known, and a measure that could validate the intervention. Clearly distinguish a proposal from a measured business outcome.
-
-### Step 8.3: Do not invent ROI
-
-Only calculate potential savings if the dataset contains suitable cost data and you can show the assumptions and calculation. Otherwise mark cost/benefit or ROI **not estimated due to missing evidence**. Do not translate an improvement target into actual savings.
-
-**Checkpoint:** Every recommendation points to a finding, and every finding points to evidence.
-
-## Phase 9 — Finish the documentation pack
-
-Complete the project documentation in this order:
-
-1. `docs/data-dictionary.md`: provenance, files, grain, fields, keys, quality findings, reuse terms.
-2. `docs/metric-definitions.md`: supported metrics, exact formulas, exclusions, denominator and limits.
-3. `docs/project-brief.md`: final scope and actual tools/work completed.
-4. `n8n/workflow-plan.md`: update with actual nodes, parameters at a high level, test results, and limitations; include a safe exported workflow if possible.
-5. `sql/`: actual staging, cleaning, KPI, and validation queries, not only templates.
-6. `docs/ai-usage-log.md`: actual AI-assisted tasks and validation details.
-7. `docs/limitations.md`: create this file and list data gaps, sample-data status, scope boundaries, and work not completed.
-8. Root `README.md`: write the final short version, including a dashboard image, 2–3 verified findings, setup steps, and links to technical documentation.
-
-Do not leave unresolved `[TBD]` or `[placeholder]` fields in the public-facing sections. If something cannot be resolved, replace the placeholder with a clear statement such as “not available in the supplied files.”
-
-## Phase 10 — Test, commit, and publish
-
-### Step 10.1: Final privacy and accuracy check
-
-Before pushing, review the staged changes and search for sensitive information:
-
-```bash
-git status --short
-git diff --check
-git diff --cached --stat
-git grep -n -i -E 'password|token|secret|api_key|private key' -- ':!docs/reference/*.docx'
-```
-
-Also inspect the n8n JSON and screenshots manually. Check there are no real email contents, private customer details, credentials, database URLs with secrets, or raw files whose license disallows sharing. `.gitignore` excludes raw tutorial files by default; do not override it casually.
-
-### Step 10.2: Commit in understandable units
+### 3.2 Create the database and tables
 
 From the repository root:
 
 ```bash
-git add docs sql n8n src tests dashboard README.md
+createdb supply_chain_portfolio
+psql -d supply_chain_portfolio -f sql/01_create_tables.sql
+```
+
+If your local account requires a username, add `-U your_postgres_user` to both commands. For pgAdmin, create a database named `supply_chain_portfolio`, open Query Tool for that database, and run the contents of `sql/01_create_tables.sql`.
+
+This creates the `supply_chain` schema and typed tables. Read the SQL before executing it. The foreign keys mean you must load dimension files before orders and order lines.
+
+### 3.3 Load the clean CSVs
+
+For a fast first-pass SQL demonstration, load the generated clean files using PostgreSQL’s `psql` client `\copy` command. `\copy` reads files from the computer running `psql`. Run this from the repository root and substitute your username/database flags as needed:
+
+```bash
+psql -d supply_chain_portfolio
+```
+
+At the `psql` prompt, enter these one at a time, in order:
+
+```sql
+\copy supply_chain.customers(customer_id, customer_name, market, city, customer_segment) FROM 'data/synthetic/customers.csv' WITH (FORMAT csv, HEADER true)
+\copy supply_chain.products(sku_id, product_name, category, shelf_life_days, unit_of_measure) FROM 'data/synthetic/products.csv' WITH (FORMAT csv, HEADER true)
+\copy supply_chain.carriers(carrier_id, carrier_name, market) FROM 'data/synthetic/carriers.csv' WITH (FORMAT csv, HEADER true)
+\copy supply_chain.orders(order_id, customer_id, carrier_id, market, order_date, promised_delivery_date, actual_delivery_date, order_status, currency_code) FROM 'data/synthetic/orders.csv' WITH (FORMAT csv, HEADER true)
+\copy supply_chain.order_lines(line_id, order_id, line_number, sku_id, ordered_qty, delivered_qty, unit_price_local, currency_code) FROM 'data/synthetic/order_lines.csv' WITH (FORMAT csv, HEADER true)
+```
+
+Exit with `\q`. If a relation already contains data, do not blindly load again: the primary keys will reject duplicates. To reset a practice database, confirm it contains only this project’s data, then drop/recreate the database or truncate the project tables in dependency order before reloading.
+
+For a pgAdmin route, use its Import/Export Data function per table, select CSV, enable Header, and load files in the same dependency order. Confirm each import’s success message and row count.
+
+### 3.4 Verify the load
+
+Run the checks:
+
+```bash
+psql -d supply_chain_portfolio -f sql/02_quality_checks.sql
+```
+
+The first result gives table row counts; subsequent results should show zero for the listed structural errors. If they do not, stop and inspect the load before continuing. Add database load row counts to your project notes, but do not treat them as business findings.
+
+Create the dashboard view:
+
+```bash
+psql -d supply_chain_portfolio -f sql/05_dashboard_views.sql
+```
+
+Then test it:
+
+```bash
+psql -d supply_chain_portfolio -c "SELECT * FROM supply_chain.order_service LIMIT 10;"
+```
+
+### 3.5 Record database details safely
+
+Add non-secret setup notes to `README.md` or `docs/database-setup.md`: PostgreSQL version, commands used, table dependencies, and where the credentials are configured. Never commit passwords, tokens, private connection URLs, `.env` files, or database screenshots containing secrets. The repository ignores raw files under `data/raw/`, but the synthetic files are intentionally committed.
+
+**Checkpoint:** the tables load in dependency order, SQL quality checks pass, and `order_service` returns one row per order.
+
+## Phase 4 — Build the n8n workflow
+
+The direct `\copy` import above proves the data can load. Now build the n8n workflow to demonstrate repeatable intake, validation, and failure handling. n8n node names and interfaces vary by version and hosting plan, so use nodes with the following responsibilities rather than relying on an exact screenshot from the video.
+
+### 4.1 Decide where n8n runs
+
+If n8n is self-hosted on your machine or a local container, it may read files in an allowed shared folder. If using n8n Cloud, it usually cannot read arbitrary paths on your laptop. Use an upload/storage method available in your account. Do not expose PostgreSQL or a local file path publicly just to make the workflow connect.
+
+Do not use your personal email inbox. The data is already in the repository, so use a manual trigger for your first version. An email trigger is optional and should use a dedicated test inbox with only dummy attachments.
+
+### 4.2 Create one workflow per file or a controlled router
+
+Create a workflow called `Synthetic CSV to PostgreSQL`. You can either build one workflow per CSV or use one workflow that routes on the exact filename. For a beginner, separate workflows for dimensions and facts are easier to debug.
+
+Load in this order because of database foreign keys:
+
+1. customers;
+2. products;
+3. carriers;
+4. orders;
+5. order lines.
+
+### 4.3 Add the workflow stages
+
+For each file, create equivalent nodes for the following steps:
+
+1. **Manual Trigger:** starts one controlled run.
+2. **Read/Upload File:** obtain a single CSV in the n8n runtime.
+3. **Set Metadata:** add a batch ID, source filename, and start timestamp.
+4. **CSV Extract/Parse:** output one structured record per row; keep IDs as strings.
+5. **Schema Check:** verify required columns match the file’s dictionary before mapping.
+6. **Row Validation:** check nonblank keys, allowed market/currency/status, valid dates, integer/nonnegative quantities, unique IDs, and parent keys.
+7. **Reject Branch:** collect invalid rows with a short reason; do not silently drop them.
+8. **PostgreSQL Insert:** insert accepted records into the matching `supply_chain` table using parameterized values or the supported PostgreSQL node. Never build SQL by concatenating raw CSV text.
+9. **Load Audit:** update `supply_chain.load_audit` with counts and `succeeded` or `failed` status. The DDL requires a unique batch ID and a visible final status.
+10. **Error Handling:** surface connection/parser/constraint failures and preserve a safe diagnostic summary without logging credentials.
+
+Use a stable batch ID. Decide what happens if the same batch is run twice: reject it as already processed, or stage then merge with conflict handling. Do not hide primary-key conflicts and report success.
+
+### 4.4 Exercise the validation fixtures
+
+The fixture files are purposely bad, so send them through the validation path but **do not insert them into the final analysis tables**:
+
+- `data/fixtures/orders_validation_fixture.csv` includes a duplicate order ID, malformed date, unsupported market/currency, and blank ID.
+- `data/fixtures/order_lines_validation_fixture.csv` includes a duplicate line ID, orphan order, negative quantity, and non-integer quantity.
+
+For each fixture, capture the rejected-row count and reasons. Test a database outage or invalid credential in a local safe environment if possible; do not publish credentials or error screenshots containing secrets.
+
+### 4.5 Export and sanitize
+
+Export the workflow to `n8n/` after building it. Inspect the export as text and remove any credential values, personal email addresses, private file paths, database hostnames that should remain private, tokens, and identifiers. The database credential should remain in n8n’s credential manager, not inside the JSON.
+
+Update `n8n/workflow-plan.md` with the nodes you actually used, the tests you ran, and any hosting constraints. Do not claim the workflow is production-grade; describe it as a portfolio demonstration.
+
+**Checkpoint:** one clean batch completes; fixture batches are rejected with reasons; a repeated batch does not silently duplicate records.
+
+## Phase 5 — Run and validate the SQL analyses
+
+### 5.1 Run the KPI queries
+
+Execute:
+
+```bash
+psql -d supply_chain_portfolio -f sql/03_fulfillment_kpis.sql
+psql -d supply_chain_portfolio -f sql/04_segment_diagnostics.sql
+```
+
+These queries are examples over the synthetic tables. Their output is not a real business finding. Read each query and confirm the grain before using it. The month in the KPI query is based on `order_date`; do not label it delivery month.
+
+### 5.2 Validate the logic manually
+
+Select a small set of order IDs from different statuses and manually compare `orders.csv` with all matching lines in `order_lines.csv`:
+
+- For a delivered order, compare actual date with promised date.
+- For each line, compare delivered quantity with ordered quantity.
+- Mark the order in-full only if every line is in-full.
+- Mark OTIF only if the order is both in-full and on-time.
+- For a cancelled order, confirm it is excluded from delivery-service rates but counted in submitted orders/cancellations.
+
+Record the sample IDs and your checks in `tests/` without changing the generated data. Re-run the SQL queries and compare the classification. Also confirm OTIF is no larger than either on-time or in-full rate when they share the same denominator.
+
+### 5.3 Protect against join-grain mistakes
+
+Before counting orders after a join, check whether one order has several order lines. Use distinct order IDs or first aggregate lines to order grain. Do not sum an order-header value once for every order line. Use line-level measures for line counts/units and order-level measures for service percentages.
+
+### 5.4 Keep currencies separate
+
+`unit_price_local` is a fictional local price. Use a market/currency filter when grouping monetary values. There is no FX table. Do not make cross-market total revenue comparisons by adding INR to USD.
+
+**Checkpoint:** you can reproduce each KPI query, explain its numerator/denominator, and trace sample classifications back to raw CSV rows.
+
+## Phase 6 — Demonstrate AI assistance responsibly
+
+The AI component is your workflow for using a model carefully, not a claim that AI makes the analysis correct.
+
+### 6.1 Ask the AI for a bounded task
+
+Give it the exact schema and metric definitions. Ask it to list missing assumptions before writing SQL. You can use this prompt:
+
+> You are assisting with an explicitly synthetic order-fulfillment project. Use only the provided table names, fields, and definitions. First identify any missing inputs or ambiguity. Then draft SQL for OTIF by market and order month at one row per order. Exclude cancelled orders, define the denominator, and calculate the intersection of on-time and in-full directly. Include an audit query showing each order’s on-time and in-full flags. Do not describe any output as a real-world finding or industry benchmark.
+
+### 6.2 Review and verify the answer
+
+Check that the model:
+
+- uses columns that really exist;
+- aggregates order lines to order grain before order KPIs;
+- applies the cancellation filter consistently;
+- uses actual vs promised dates correctly;
+- checks every order line for the in-full flag;
+- does not combine USD and INR;
+- does not infer inventory or root causes.
+
+Run its query against PostgreSQL. Compare it with the committed SQL and manually checked sample orders. Save the prompt summary, model draft, your final changes, and validation method in `docs/ai-usage-log.md`.
+
+### 6.3 Use AI to summarize only checked outputs
+
+Give the model aggregate query results or a non-sensitive table and ask for a draft that states the unit, period, denominator, and synthetic-data limitation. Verify every number and claim yourself. A good caption says “in this generated sample”; it does not say “this carrier is poor in the real world.”
+
+**Checkpoint:** your log shows what AI did, what you changed, and how you verified it.
+
+## Phase 7 — Build the dashboard
+
+Use **Power BI Desktop** if you have access to it, since it is a recognizable analyst tool. If you do not, use another dashboard tool that connects to PostgreSQL or export the query outputs to CSV and build a reproducible Python/Plotly dashboard. Choose one primary dashboard route rather than making several unfinished ones.
+
+### 7.1 Connect Power BI to PostgreSQL
+
+1. Open Power BI Desktop and choose **Get Data → PostgreSQL database**.
+2. Enter your local/hosted server and database (`supply_chain_portfolio`). Use private credentials; do not record the password in the project.
+3. Select `supply_chain.order_service`, `supply_chain.order_lines`, `supply_chain.customers`, `supply_chain.products`, and `supply_chain.carriers`. Do not also import the raw `orders` table for this report; the view already has one row per order.
+4. Confirm relationship directions and keys. Connect `order_service` (one row per order) to `order_lines` (many rows per order) by `order_id`; connect customer, product, and carrier dimensions through their IDs.
+5. Add a page-level or report-level text notice: **Synthetic demonstration — not real business performance.**
+
+If Power BI cannot connect directly in your environment, export query results from `psql` or pgAdmin and state that the dashboard uses static synthetic extracts. Don’t upload a publicly reachable database.
+
+### 7.2 Add basic measures
+
+Use the SQL `order_service` view, or create equivalent DAX measures only after checking the view’s grain and flags. Example measures for the one-row-per-order view:
+
+```DAX
+Submitted Orders = DISTINCTCOUNT(order_service[order_id])
+
+Delivered Orders =
+CALCULATE(
+    DISTINCTCOUNT(order_service[order_id]),
+    order_service[order_status] = "delivered"
+)
+
+On-Time Rate =
+DIVIDE(
+    CALCULATE(
+        DISTINCTCOUNT(order_service[order_id]),
+        order_service[order_status] = "delivered",
+        order_service[is_on_time] = TRUE()
+    ),
+    [Delivered Orders]
+)
+
+In-Full Order Rate =
+DIVIDE(
+    CALCULATE(
+        DISTINCTCOUNT(order_service[order_id]),
+        order_service[order_status] = "delivered",
+        order_service[is_in_full] = TRUE()
+    ),
+    [Delivered Orders]
+)
+
+OTIF Rate =
+DIVIDE(
+    CALCULATE(
+        DISTINCTCOUNT(order_service[order_id]),
+        order_service[order_status] = "delivered",
+        order_service[is_otif] = TRUE()
+    ),
+    [Delivered Orders]
+)
+
+Cancellation Rate =
+DIVIDE(
+    CALCULATE(
+        DISTINCTCOUNT(order_service[order_id]),
+        order_service[order_status] = "cancelled"
+    ),
+    [Submitted Orders]
+)
+```
+
+For unit fill rate use line-level totals from the line table, restricted to delivered orders, and verify the relationship does not duplicate line rows:
+
+```DAX
+Unit Fill Rate =
+DIVIDE(
+    CALCULATE(SUM(order_lines[delivered_qty]), order_service[order_status] = "delivered"),
+    CALCULATE(SUM(order_lines[ordered_qty]), order_service[order_status] = "delivered")
+)
+```
+
+If Power BI reports a relationship or DAX error, use the SQL query results as the source of truth and adjust the model; don’t change KPI definitions merely to make a chart work.
+
+### 7.3 Lay out three pages
+
+**Page 1 — Fulfillment overview:** synthetic-data notice, submitted/delivered/cancelled order cards, on-time, in-full, OTIF, month trend, market slicer, and eligible order count.
+
+**Page 2 — Diagnostic segments:** on-time by carrier and market, incomplete lines/undelivered units by product/category, and customer segment comparison. Show volume next to rate.
+
+**Page 3 — Data and method (optional):** table grain, KPI definitions, cancellation treatment, data-quality checks, dataset generation seed, and explicit limitations.
+
+Use readable titles and subtitles. Include units and denominator context. Avoid red/green wording that implies a real target or industry benchmark; if you add thresholds for demonstration, label them “illustrative only.”
+
+### 7.4 Validate dashboard totals
+
+Compare each KPI card with the equivalent SQL query for the same filters and date basis. Test market, month, carrier, and customer filters individually. Save one or two screenshots under `dashboard/screenshots/`; each image must visibly state that the data is synthetic. Never include credentials in a screenshot.
+
+**Checkpoint:** dashboard values reconcile with SQL, filter context is clear, and the synthetic limitation appears on every relevant view.
+
+## Phase 8 — Write findings and recommendations without overselling
+
+### 8.1 Record demonstrative patterns accurately
+
+For each query output you choose to discuss, record in a findings log:
+
+- query name and exact filter/date basis;
+- segment and numerator/denominator;
+- result from the synthetic data;
+- a statement that the pattern is programmed/illustrative, not empirical;
+- what a real analyst would need to verify before action.
+
+Do not imply a generated segment’s rate was “discovered” as if it came from a real operation. Since the generator intentionally varies groups, say that the project demonstrates whether the pipeline can surface those constructed patterns.
+
+### 8.2 Write a hypothetical operational follow-up
+
+A safe recommendation could be:
+
+> “In a real operation, a similar pattern would justify checking shipment events, inventory availability, and the customer delivery promise before selecting an intervention. These synthetic records do not establish which cause is responsible.”
+
+Do not say to increase inventory or replace a carrier based only on the synthetic data. There is no on-hand stock, supplier, contract, or actual carrier-event evidence.
+
+### 8.3 Don’t calculate fake ROI
+
+Do not estimate cost savings, service improvement, customer retention, or inventory reduction unless you have real, relevant cost and intervention data. This project’s synthetic prices are not business costs. It is completely acceptable to state: “No real-world impact or ROI is measured; this is a technical demonstration.”
+
+**Checkpoint:** all statements distinguish the generated sample from real operational performance.
+
+## Phase 9 — Finish the project documentation
+
+Update these files after you complete each phase:
+
+- `docs/synthetic-data-card.md`: keep generator details, intended use, and limitations current.
+- `docs/data-dictionary.md`: record actual schemas, grains, keys, and validation outcomes.
+- `docs/metric-definitions.md`: document final formula and display definitions.
+- `docs/project-brief.md`: state actual tasks completed and any scope changes.
+- `n8n/workflow-plan.md`: replace plans with the nodes and tests you actually built.
+- `docs/ai-usage-log.md`: record actual AI assistance, edits, and independent checks.
+- `README.md`: include a clear project summary, synthetic-data disclosure, status, links, and only completed outputs.
+- `docs/limitations.md`: include that the dataset is synthetic, generator-controlled, and lacks inventory history and real costs.
+
+Do not leave placeholders in the portfolio-facing README. Where work is incomplete, state “not yet built” rather than implying it exists.
+
+## Phase 10 — Commit and publish
+
+Before committing, inspect changes and whitespace:
+
+```bash
 git status --short
-git commit -m "Document order fulfillment analysis"
+git diff --check
+git diff --stat
+```
+
+Confirm that data files under `data/synthetic/` are generated by this repository’s script and that invalid fixtures remain outside the clean analytical tables. Make sure no credentials, real customer files, private email, or non-redistributable tutorial files were added.
+
+Commit coherent milestones:
+
+```bash
+git add src data docs sql n8n dashboard README.md
+git status --short
+git commit -m "Add reproducible synthetic fulfillment dataset"
 git push
 ```
 
-Only run the commit after reviewing what is staged. Use later commits for meaningful milestones, such as `Add validated fulfillment KPI queries` or `Add dashboard and findings`.
+The repository is private. Keep it private while unfinished. Before making it public, check the full commit history and screenshots for secrets or private files, and retain the synthetic-data disclosure in the README and dashboard. The generated data itself is intended to be reproducible and shareable with its generator; do not add the third-party tutorial data.
 
-### Step 10.3: Decide when to make the repository public
+## Phase 11 — Prepare a credible portfolio summary
 
-The repository starts private. Keep it private while it contains unfinished work or material with uncertain reuse permissions. Before making it public, inspect repository settings, licenses, file provenance, workflow exports, screenshots, commit history, and all project claims. Do not make it public merely because the dashboard is finished if you cannot redistribute the data.
+A concise portfolio description can say:
 
-## Phase 11 — Prepare the portfolio case study and interview explanation
+> “Built a deterministic synthetic retail order-fulfillment dataset and an AI-assisted ETL-to-dashboard demonstration using Python, n8n, PostgreSQL, and SQL. Implemented order-level service calculations and validated workflow behavior using isolated invalid-input fixtures. All generated patterns are fictional and are not presented as real operating results.”
 
-Write the public summary only after the results are verified. A good case study tells this story in a few minutes:
+Only list tools you actually used. Don’t claim operational results, inventory optimization, or realized impact from the generated records.
 
-1. **Context:** tutorial/simulated scenario and business question.
-2. **Your approach:** profiling, data model, workflow, SQL, and dashboard.
-3. **One or two validated findings:** include the denominator and timeframe.
-4. **Your recommendation:** next investigation or pilot, not an unsupported promise.
-5. **AI judgment:** what AI drafted, what you corrected, and how you validated it.
-6. **Limitations:** fields unavailable and why this is fulfillment analysis rather than a proven inventory optimization.
-7. **Reproduction:** where code and setup instructions live.
+For internship applications, this project can demonstrate technical workflow, SQL, KPI logic, and AI validation. Synthetic data is weaker evidence of real business insight than a permitted real dataset. If you later find an openly licensed, redistributable source, add a separate analysis project or a clearly labeled real-data extension; keep this synthetic technical demo as its own reproducible artifact.
 
-Resume bullet template—fill only with verified values:
+## Final checklist
 
-> Built an AI-assisted order-fulfillment analysis using [actual tools], profiled [N] [orders/order lines] from tutorial-provided data, validated [supported KPI], and identified [specific measured pattern] for [proposed operational follow-up].
-
-Do not write “[improved service by X%]” unless you implemented a change and measured the before/after result under a defensible evaluation design. For a portfolio analysis, say “identified,” “analyzed,” or “recommended,” not “delivered savings” or “optimized inventory.”
-
-## Suggested build calendar
-
-A realistic schedule for a focused project is:
-
-- **Session 1:** clone repo, acquire files, document provenance and project scope.
-- **Session 2:** profile files, establish grain/keys, complete the data dictionary.
-- **Session 3:** set metric availability and definitions; create PostgreSQL staging/clean layer.
-- **Session 4:** build n8n intake and test valid/invalid/duplicate files.
-- **Session 5:** write SQL analyses and independently validate key totals.
-- **Session 6:** build dashboard, write findings, decide a careful recommendation.
-- **Session 7:** complete AI log, README, privacy review, demo recording, and final push.
-
-The schedule is a planning aid, not a promise that each session will take a fixed number of hours. Data-access or field gaps may require a narrower analysis.
-
-## Final completion checklist
-
-- [ ] The project is accurately labeled as tutorial-data, simulated, academic, or real.
-- [ ] Source provenance and file reuse terms are documented.
-- [ ] The grain and keys of all files are explained.
-- [ ] No KPI is reported without all necessary fields and a documented rule.
-- [ ] Order-level calculations are not multiplied by line-level joins.
-- [ ] Data-load counts reconcile; invalid and duplicate records are handled explicitly.
-- [ ] AI-generated code and summaries were checked and the check is recorded.
-- [ ] Dashboard values reconcile to SQL and show denominators/units.
-- [ ] Findings link to evidence; recommendations do not claim unsupported causes.
-- [ ] No unrealized savings, implementation, or service improvement is claimed.
-- [ ] No credentials, private data, or prohibited raw files are committed.
-- [ ] README and setup instructions let a reviewer understand the project.
+- [ ] Generator runs from the README command and uses the documented seed.
+- [ ] Structural validator passes on clean files.
+- [ ] Generated data is prominently labeled synthetic in README and dashboard.
+- [ ] The original non-redistributable tutorial data is not in Git.
+- [ ] SQL uses correct grain, cancellation rules, and currency boundaries.
+- [ ] Dashboard totals reconcile to SQL and show denominators.
+- [ ] Invalid fixtures are rejected and never mixed with analysis data.
+- [ ] AI code and summaries are checked; validations are documented.
+- [ ] Recommendations and resume wording do not claim real-world performance or impact.
+- [ ] No credentials, private data, or unapproved third-party content is committed.

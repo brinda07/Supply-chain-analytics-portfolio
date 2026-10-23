@@ -1,0 +1,46 @@
+{
+  "dataset_name": "Synthetic Retail Order Fulfillment Dataset",
+  "dataset_type": "fully synthetic, deterministic, fictional records",
+  "generated_by": "src/generate_synthetic_dataset.py",
+  "random_seed": 20261023,
+  "generation_date": "2026-10-23",
+  "coverage_start": "2025-01-01",
+  "coverage_end": "2026-06-30",
+  "markets": [
+    "US",
+    "IN"
+  ],
+  "currency_codes": [
+    "USD",
+    "INR"
+  ],
+  "tables": {
+    "orders.csv": {
+      "grain": "one row per order",
+      "rows": 1440
+    },
+    "order_lines.csv": {
+      "grain": "one row per order-product line",
+      "rows": 3601
+    },
+    "customers.csv": {
+      "grain": "one row per fictional customer",
+      "rows": 80
+    },
+    "products.csv": {
+      "grain": "one row per fictional SKU",
+      "rows": 24
+    },
+    "carriers.csv": {
+      "grain": "one row per fictional carrier",
+      "rows": 6
+    }
+  },
+  "limitations": [
+    "No real people, company, retailer, carrier, or transaction is represented.",
+    "The data is created for practicing data ingestion, SQL, validation, and visualization only.",
+    "Any patterns are consequences of the generator's design, not empirical supply-chain findings.",
+    "Synthetic prices are market-local; do not aggregate USD and INR without a separate documented FX basis.",
+    "No inventory-on-hand, stock movement, purchase-order, or actual supplier lead-time data is included."
+  ]
+}

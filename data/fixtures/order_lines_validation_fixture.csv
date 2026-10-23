@@ -1,0 +1,6 @@
+line_id,order_id,line_number,sku_id,ordered_qty,delivered_qty,unit_price_local,currency_code
+TEST-L1,TEST-001,1,SKU-001,4,4,12.00,USD
+TEST-L1,TEST-001,1,SKU-001,4,4,12.00,USD
+TEST-L2,NO-SUCH-ORDER,1,SKU-002,3,2,8.00,USD
+TEST-L3,TEST-002,1,SKU-003,-2,1,7.00,USD
+TEST-L4,TEST-003,1,SKU-004,three,2,9.00,USD

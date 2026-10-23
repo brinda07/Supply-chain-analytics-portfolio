@@ -1,7 +1,12 @@
-# SQL Layer
+# SQL Layer — Synthetic Dataset
 
-Build SQL only after mapping actual CSV fields in `docs/data-dictionary.md`. Keep raw/staging tables separate from clean views. State the grain of every table/view and use stable, documented keys.
+Run these files from the repository root after generating the CSVs:
 
-Before reporting order-level values from joined data, aggregate order lines to order grain to avoid multiplying header-level metrics. Use exact final metric rules from `docs/metric-definitions.md`.
+1. `01_create_tables.sql` — creates the `supply_chain` schema, dimension/fact tables, and load audit table.
+2. Load CSVs in dependency order: customers, products, carriers, orders, order lines.
+3. `02_quality_checks.sql` — structural and reconciliation checks.
+4. `05_dashboard_views.sql` — creates one row per order with line-aggregated flags for dashboard use.
+5. `03_fulfillment_kpis.sql` — order-level service rates, unit fill rate, and cancellations.
+6. `04_segment_diagnostics.sql` — illustrative synthetic comparisons by carrier, SKU, and segment.
 
-`kpi_template.sql` assumes a clean line-level view with order ID, market, promised date, actual delivery date, ordered quantity, and delivered quantity. It will not run until those fields are verified and mapped; it is a reference, not proof the dataset supports OTIF.
+The queries are reproducible practice material. Outputs describe only generator-produced records and are not empirical or causal supply-chain findings. Read `docs/metric-definitions.md` before interpreting them. Keep currencies separate and do not infer inventory causes from this dataset.

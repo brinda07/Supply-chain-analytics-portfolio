@@ -62,23 +62,26 @@ This project simulates a monthly demand-planning process for 100 high-volume SKU
 
 ---
 
-### Project 3 · AI-Assisted Order Fulfillment Performance Analysis
+### Project 3 · AI-Assisted Order Fulfillment Analytics on Synthetic Data
 
-Based on a tutorial’s fictional retailer scenario, this project asks which markets, products, or customers show the clearest order-fulfillment risk and what an operations team should investigate first. The planned workflow takes source CSVs through data validation and n8n into PostgreSQL, then uses SQL analysis and a dashboard to communicate findings.
+This project uses a deterministic, fully synthetic dataset generated in the repository, so it does not redistribute the tutorial creator’s restricted files. The records model fictional retail orders across the US and India and support a reproducible demonstration of data validation, ETL, PostgreSQL, SQL, fulfillment KPIs, and an AI-assisted dashboard workflow.
 
 **Planned outputs**
 
-- Data dictionary, source notes, and data-quality checks.
-- Repeatable CSV intake with load logging and duplicate/error handling.
-- PostgreSQL staging and clean analytical layer.
-- SQL analysis for only those fulfillment metrics supported by the source fields.
-- Dashboard, evidence-backed findings, and a documented AI validation process.
+- Reproducible generator and five related synthetic CSV tables.
+- Separate intentionally invalid test fixtures for data-ingestion checks.
+- PostgreSQL schema, quality queries, fulfillment SQL, and dashboard view.
+- Repeatable n8n intake with load logging and duplicate/error handling.
+- Dashboard and AI validation log, clearly labeled as synthetic demonstration outputs.
 
-**Scope note:** This project begins as order-fulfillment analysis, not proven inventory optimization. OTIF requires appropriate promised-date, actual-delivery, and ordered/delivered-quantity fields. Stockout, safety-stock, and reorder-point analysis require inventory and replenishment data. Unsupported metrics will be marked unavailable rather than inferred.
+**Data disclosure:** All records are fictional; delivery and partial-fulfillment variation is programmed by the generator. Calculations can demonstrate analytic technique but are not empirical findings, industry benchmarks, or causal evidence. There is no inventory-on-hand or replenishment history, so this is not inventory optimization.
 
-**Planned tools:** n8n · PostgreSQL · SQL · Python for validation · one dashboard tool to be selected · AI assistant for drafting and review
-**Status:** In progress — the tutorial files have not yet been profiled.
+**Tools:** Python · PostgreSQL · SQL · n8n planned · dashboard tool TBD · AI assistant for drafting and review
+**Status:** Synthetic dataset and project documentation scaffold created; workflow and dashboard not yet built.
 
+- [Download the synthetic dataset](data/synthetic/)
+- [Read the synthetic-data card](docs/synthetic-data-card.md)
+- [Run the deterministic generator](src/generate_synthetic_dataset.py)
 - [Open the step-by-step project manual](docs/step-by-step-project-instructions.md)
 - [Read the project brief](docs/project-brief.md)
 - [View metric definitions](docs/metric-definitions.md)
@@ -94,7 +97,7 @@ Based on a tutorial’s fictional retailer scenario, this project asks which mar
 |---|---|---|---|
 | 1. Demand Forecasting & Inventory Planning | Forecasting, ABC-XYZ, safety stock, reorder point | Python, Power BI | Completed |
 | 2. Demand Planning & Forecast Accuracy Management | Rolling backtesting, WAPE, bias, FVA, planner exceptions | Python, HTML, Plotly | Live |
-| 3. AI-Assisted Order Fulfillment Performance Analysis | Data quality, SQL, workflow automation, fulfillment KPIs | n8n, PostgreSQL, SQL, Python, dashboard TBD | In progress |
+| 3. AI-Assisted Order Fulfillment Analytics on Synthetic Data | Synthetic data, data quality, SQL, ETL, fulfillment KPIs, AI validation | Python, PostgreSQL, SQL, n8n planned, dashboard TBD | In progress |
 | 4. Supplier Performance & Spend Analysis | Supplier scorecard, spend analysis, sourcing risk | Python, Power BI, SQL | Planned |
 | 5. S&OP Scenario Planning Dashboard | Demand-supply gap, inventory coverage, revenue risk | Power BI, Python | Planned |
 
@@ -126,6 +129,7 @@ For the current fulfillment project:
 - [Project brief](docs/project-brief.md)
 - [Data dictionary template](docs/data-dictionary.md)
 - [Metric definitions and field requirements](docs/metric-definitions.md)
+- [Synthetic-data card](docs/synthetic-data-card.md)
 - [AI usage and validation log](docs/ai-usage-log.md)
 - [Business analysis portfolio template](docs/reference/Supply_Chain_Optimization_BA_Portfolio_Template.docx)
 
@@ -135,4 +139,4 @@ Open to **Supply Chain Analyst internship** opportunities. Contact details and p
 
 ---
 
-*Tutorial inspiration for Project 3: [AI-assisted supply-chain analytics walkthrough](https://www.youtube.com/watch?v=PglKAYgRdJ4). Its fictional scenario and sample data are identified as such. Findings will be reported only after the source data is inspected and the calculations are validated.*
+*Workflow inspiration for Project 3: [AI-assisted supply-chain analytics walkthrough](https://www.youtube.com/watch?v=PglKAYgRdJ4). The tutorial’s restricted sample files are not included. The project’s separate generated dataset is synthetic and its patterns are not empirical findings.*

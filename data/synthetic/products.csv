@@ -1,0 +1,25 @@
+sku_id,product_name,category,shelf_life_days,unit_of_measure
+SKU-001,Organic Lentils,Staples,379,each
+SKU-002,Brown Rice,Staples,386,each
+SKU-003,Chickpeas,Staples,393,each
+SKU-004,Quinoa,Staples,400,each
+SKU-005,Oats,Staples,407,each
+SKU-006,Millet,Staples,369,each
+SKU-007,Almond Butter,Spreads,281,each
+SKU-008,Tahini,Spreads,288,each
+SKU-009,Cashew Spread,Spreads,295,each
+SKU-010,Peanut Butter,Spreads,302,each
+SKU-011,Fruit Preserve,Spreads,309,each
+SKU-012,Coconut Spread,Spreads,271,each
+SKU-013,Seed Crackers,Snacks,188,each
+SKU-014,Trail Mix,Snacks,195,each
+SKU-015,Roasted Peas,Snacks,202,each
+SKU-016,Rice Bites,Snacks,209,each
+SKU-017,Granola Bar,Snacks,216,each
+SKU-018,Dried Mango,Snacks,223,each
+SKU-019,Oat Drink,Beverages,155,each
+SKU-020,Coconut Water,Beverages,162,each
+SKU-021,Herbal Tea,Beverages,169,each
+SKU-022,Turmeric Latte,Beverages,176,each
+SKU-023,Ginger Tonic,Beverages,183,each
+SKU-024,Cacao Drink,Beverages,190,each
