@@ -235,73 +235,41 @@ Add non-secret setup notes to `README.md` or `docs/database-setup.md`: PostgreSQ
 
 ## Phase 4 — Build the n8n workflow
 
-The direct `\copy` import above proves the data can load. Now build the n8n workflow to demonstrate repeatable intake, validation, and failure handling. n8n node names and interfaces vary by version and hosting plan, so use nodes with the following responsibilities rather than relying on an exact screenshot from the video.
+The repository includes an importable workflow named **CSV to PostgreSQL** at `n8n/csv-to-postgresql.json`. It handles one file per run, routes by exact filename, inserts accepted rows into the matching table, exposes rejected rows in a separate review branch, and records batch counts in `supply_chain.load_audit`.
 
-### 4.1 Decide where n8n runs
+### 4.1 Prepare n8n and PostgreSQL access
 
-If n8n is self-hosted on your machine or a local container, it may read files in an allowed shared folder. If using n8n Cloud, it usually cannot read arbitrary paths on your laptop. Use an upload/storage method available in your account. Do not expose PostgreSQL or a local file path publicly just to make the workflow connect.
+Run `sql/01_create_tables.sql` in the database first. The workflow needs the five destination tables and `supply_chain.load_audit`.
 
-Do not use your personal email inbox. The data is already in the repository, so use a manual trigger for your first version. An email trigger is optional and should use a dedicated test inbox with only dummy attachments.
+Make the repository’s `data/synthetic/` and `data/fixtures/` files readable from the **n8n runtime**. Open the **Set Batch Metadata** node and replace its example `file_path` with the absolute path to one CSV as seen inside n8n. On n8n Cloud, use a permitted `/home/node/` path. For Docker, mount the host folder into the container and use the mounted container path. Do not assume a path on your laptop is visible inside n8n, and do not expose your filesystem publicly.
 
-### 4.2 Create one workflow per file or a controlled router
+### 4.2 Import and configure the workflow
 
-Create a workflow called `Synthetic CSV to PostgreSQL`. You can either build one workflow per CSV or use one workflow that routes on the exact filename. For a beginner, separate workflows for dimensions and facts are easier to debug.
+In n8n, choose **Workflows → Import from File** and select `n8n/csv-to-postgresql.json`. The workflow remains inactive and starts only when you press **Execute Workflow**.
 
-Load in this order because of database foreign keys:
+Set the path in **Set Batch Metadata** to one file, starting with `customers.csv`. Then open each PostgreSQL node and select your database credential: `Insert Audit Started`, `Insert customers`, `Insert products`, `Insert carriers`, `Insert orders`, `Insert order_lines`, and `Update Load Audit`. The JSON contains no passwords or credential IDs.
 
-1. customers;
+Run one file per execution in this order because of foreign keys: customers, products, carriers, orders, then order lines. Change `file_path` before each run. The workflow routes only the five exact filenames listed above.
 
-1. products;
+### 4.3 Review validation, inserts, and audit results
 
-1. carriers;
+The workflow validates required fields, duplicate keys within the file, market/currency consistency where available in the row, dates, status, and numeric quantities. It rejects unknown filenames. PostgreSQL enforces database types, foreign keys, and conflicts with records already loaded. A PostgreSQL insert uses transaction batching; a constraint failure should roll back that file’s insert.
 
-1. orders;
+If a file contains invalid rows, inspect **Rejected Records — Review in Execution** in the saved run. This simpler workflow keeps the detailed rejected records in n8n execution output; it does **not** create a rejection table or durable rejection file. The audit table stores a bounded error summary and the input/rejected counts.
 
-1. order lines.
+Check `supply_chain.load_audit` after each run. A completed run is marked `succeeded` with its inserted and rejected counts. A failed insert is marked `failed`; its accepted count is zero because the file insert is transactional. If PostgreSQL itself is unavailable, the workflow may not be able to update the audit row, which will remain `started` for later review.
 
-### 4.3 Add the workflow stages
+### 4.4 Test the clean and rejection paths
 
-For each file, create equivalent nodes for the following steps:
+After loading the clean files in dependency order, set `file_path` to each fixture in `data/fixtures/`. Confirm its invalid rows and row-level reasons appear in the rejection review node, and reconcile the input, inserted, and rejected counts with `load_audit`. The fixture records must not be inserted into the analytical tables.
 
-1. **Manual Trigger:** starts one controlled run.
+Try running an already-loaded clean CSV a second time. Its primary-key conflict should fail the transaction and be recorded as failed, not silently skipped. To repeat a successful end-to-end run, use a fresh practice database or reset only this project’s tables after confirming the target database contains no other data.
 
-1. **Read/Upload File:** obtain a single CSV in the n8n runtime.
+### 4.5 Record what you actually built
 
-1. **Set Metadata:** add a batch ID, source filename, and start timestamp.
+The detailed node map, file-path and credential setup, validation boundaries, tests, and error behavior are documented in `n8n/workflow-plan.md`. Keep the exported JSON credential-free. Describe this as a portfolio demonstration, not a production-grade integration. If you later add durable rejection storage or automatic folder processing, document and test those as separate extensions.
 
-1. **CSV Extract/Parse:** output one structured record per row; keep IDs as strings.
-
-1. **Schema Check:** verify required columns match the file’s dictionary before mapping.
-
-1. **Row Validation:** check nonblank keys, allowed market/currency/status, valid dates, integer/nonnegative quantities, unique IDs, and parent keys.
-
-1. **Reject Branch:** collect invalid rows with a short reason; do not silently drop them.
-
-1. **PostgreSQL Insert:** insert accepted records into the matching `supply_chain` table using parameterized values or the supported PostgreSQL node. Never build SQL by concatenating raw CSV text.
-
-1. **Load Audit:** update `supply_chain.load_audit` with counts and `succeeded` or `failed` status. The DDL requires a unique batch ID and a visible final status.
-
-1. **Error Handling:** surface connection/parser/constraint failures and preserve a safe diagnostic summary without logging credentials.
-
-Use a stable batch ID. Decide what happens if the same batch is run twice: reject it as already processed, or stage then merge with conflict handling. Do not hide primary-key conflicts and report success.
-
-### 4.4 Exercise the validation fixtures
-
-The fixture files are purposely bad, so send them through the validation path but **do not insert them into the final analysis tables**:
-
-- `data/fixtures/orders_validation_fixture.csv` includes a duplicate order ID, malformed date, unsupported market/currency, and blank ID.
-
-- `data/fixtures/order_lines_validation_fixture.csv` includes a duplicate line ID, orphan order, negative quantity, and non-integer quantity.
-
-For each fixture, capture the rejected-row count and reasons. Test a database outage or invalid credential in a local safe environment if possible; do not publish credentials or error screenshots containing secrets.
-
-### 4.5 Export and sanitize
-
-Export the workflow to `n8n/` after building it. Inspect the export as text and remove any credential values, personal email addresses, private file paths, database hostnames that should remain private, tokens, and identifiers. The database credential should remain in n8n’s credential manager, not inside the JSON.
-
-Update `n8n/workflow-plan.md` with the nodes you actually used, the tests you ran, and any hosting constraints. Do not claim the workflow is production-grade; describe it as a portfolio demonstration.
-
-**Checkpoint:** one clean batch completes; fixture batches are rejected with reasons; a repeated batch does not silently duplicate records.
+**Checkpoint:** the five clean CSVs load in dependency order, fixture rows reach the rejection review branch, and `load_audit` counts/statuses match the run outcomes.
 
 ## Phase 5 — Run and validate the SQL analyses
 

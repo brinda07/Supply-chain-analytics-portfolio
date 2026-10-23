@@ -71,13 +71,13 @@ This project uses a deterministic, fully synthetic dataset generated in the repo
 - Reproducible generator and five related synthetic CSV tables.
 - Separate intentionally invalid test fixtures for data-ingestion checks.
 - PostgreSQL schema, quality queries, fulfillment SQL, and dashboard view.
-- Repeatable n8n intake with load logging and duplicate/error handling.
+- Importable n8n workflow JSON with filename routing, validation, rejection review, PostgreSQL inserts, and load audit.
 - Dashboard and AI validation log, clearly labeled as synthetic demonstration outputs.
 
 **Data disclosure:** All records are fictional; delivery and partial-fulfillment variation is programmed by the generator. Calculations can demonstrate analytic technique but are not empirical findings, industry benchmarks, or causal evidence. There is no inventory-on-hand or replenishment history, so this is not inventory optimization.
 
-**Tools:** Python · PostgreSQL · SQL · n8n planned · dashboard tool TBD · AI assistant for drafting and review
-**Status:** Synthetic dataset and project documentation scaffold created; workflow and dashboard not yet built.
+**Tools:** Python · PostgreSQL · SQL · n8n workflow export prepared (runtime test pending) · dashboard tool TBD · AI assistant for drafting and review
+**Status:** Synthetic dataset, documentation, and importable workflow created; workflow not yet tested in n8n/PostgreSQL; dashboard not yet built.
 
 - [Download the synthetic dataset](data/synthetic/)
 - [Read the synthetic-data card](docs/synthetic-data-card.md)
@@ -85,6 +85,8 @@ This project uses a deterministic, fully synthetic dataset generated in the repo
 - [Open the step-by-step project manual](docs/step-by-step-project-instructions.md)
 - [Read the project brief](docs/project-brief.md)
 - [View metric definitions](docs/metric-definitions.md)
+- [Import the CSV to PostgreSQL n8n workflow](n8n/csv-to-postgresql.json)
+- [Read the n8n workflow plan and setup notes](n8n/workflow-plan.md)
 - [Browse the project files](.)
 
 <!-- Add a real dashboard screenshot here after the dashboard has been built and validated. -->
@@ -97,7 +99,7 @@ This project uses a deterministic, fully synthetic dataset generated in the repo
 |---|---|---|---|
 | 1. Demand Forecasting & Inventory Planning | Forecasting, ABC-XYZ, safety stock, reorder point | Python, Power BI | Completed |
 | 2. Demand Planning & Forecast Accuracy Management | Rolling backtesting, WAPE, bias, FVA, planner exceptions | Python, HTML, Plotly | Live |
-| 3. AI-Assisted Order Fulfillment Analytics on Synthetic Data | Synthetic data, data quality, SQL, ETL, fulfillment KPIs, AI validation | Python, PostgreSQL, SQL, n8n planned, dashboard TBD | In progress |
+| 3. AI-Assisted Order Fulfillment Analytics on Synthetic Data | Synthetic data, data quality, SQL, ETL, fulfillment KPIs, AI validation | Python, PostgreSQL, SQL, n8n export prepared, dashboard TBD | In progress |
 | 4. Supplier Performance & Spend Analysis | Supplier scorecard, spend analysis, sourcing risk | Python, Power BI, SQL | Planned |
 | 5. S&OP Scenario Planning Dashboard | Demand-supply gap, inventory coverage, revenue risk | Power BI, Python | Planned |
 
@@ -130,6 +132,8 @@ For the current fulfillment project:
 - [Data dictionary template](docs/data-dictionary.md)
 - [Metric definitions and field requirements](docs/metric-definitions.md)
 - [Synthetic-data card](docs/synthetic-data-card.md)
+- [Importable n8n workflow](n8n/csv-to-postgresql.json)
+- [n8n workflow plan](n8n/workflow-plan.md)
 - [AI usage and validation log](docs/ai-usage-log.md)
 - [Business analysis portfolio template](docs/reference/Supply_Chain_Optimization_BA_Portfolio_Template.docx)
 

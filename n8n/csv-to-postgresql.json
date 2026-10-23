@@ -1,0 +1,1022 @@
+{
+  "name": "CSV to PostgreSQL",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1000,
+        0
+      ],
+      "id": "e9153c49-1e8e-4fb3-809e-8e5c9e0217f7",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e610851f-8984-41af-ae7c-550257a62877",
+              "name": "file_path",
+              "value": "/home/node/.n8n-files/supply-chain/data/synthetic/orders.csv",
+              "type": "string"
+            },
+            {
+              "id": "8cfd06c4-994a-4a60-9f3c-773afb0a4a39",
+              "name": "batch_id",
+              "value": "={{ 'csv-' + $now.toMillis() + '-' + $execution.id }}",
+              "type": "string"
+            },
+            {
+              "id": "52c952a5-5553-4f0b-85cc-300c6f13e21c",
+              "name": "started_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -780,
+        0
+      ],
+      "id": "cb7b35c5-b3f3-4db2-8463-67e0403841d9",
+      "name": "Set Batch Metadata"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "={{ $('Set Batch Metadata').first().json.file_path }}",
+        "options": {
+          "dataPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -560,
+        0
+      ],
+      "id": "7a626a2f-13b5-49ac-8579-2a2c1a372add",
+      "name": "Read CSV File"
+    },
+    {
+      "parameters": {
+        "operation": "csv",
+        "binaryPropertyName": "data",
+        "options": {
+          "headerRow": true
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -340,
+        0
+      ],
+      "id": "7845770a-962f-412c-ab72-ca5a8ae6a862",
+      "name": "Extract CSV Rows",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const metadata = $('Set Batch Metadata').first().json;\nconst sourceFile = String(metadata.file_path || '').split(/[\\\\/]/).pop();\nconst specs = {\n  'customers.csv': { table: 'customers', fields: ['customer_id','customer_name','market','city','customer_segment'], pk: 'customer_id' },\n  'products.csv': { table: 'products', fields: ['sku_id','product_name','category','shelf_life_days','unit_of_measure'], pk: 'sku_id' },\n  'carriers.csv': { table: 'carriers', fields: ['carrier_id','carrier_name','market'], pk: 'carrier_id' },\n  'orders.csv': { table: 'orders', fields: ['order_id','customer_id','carrier_id','market','order_date','promised_delivery_date','actual_delivery_date','order_status','currency_code'], pk: 'order_id' },\n  'order_lines.csv': { table: 'order_lines', fields: ['line_id','order_id','line_number','sku_id','ordered_qty','delivered_qty','unit_price_local','currency_code'], pk: 'line_id' },\n};\nconst spec = specs[sourceFile];\nconst input = $input.all().map(item => item.json);\nconst seen = new Set();\nconst valid = [];\nconst rejected = [];\nconst isIsoDate = value => {\n  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(value ?? ''))) return false;\n  const d = new Date(`${value}T00:00:00Z`);\n  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0,10) === value;\n};\nconst integer = value => /^-?\\d+$/.test(String(value ?? ''));\nfor (let i = 0; i < input.length; i++) {\n  const row = input[i] || {};\n  const errors = [];\n  if (!spec) {\n    errors.push(`Unsupported filename: ${sourceFile || '(blank)'}`);\n  } else {\n    const unexpected = Object.keys(row).filter(key => !spec.fields.includes(key));\n    const missing = spec.fields.filter(key => !Object.prototype.hasOwnProperty.call(row, key));\n    if (missing.length) errors.push(`Missing columns: ${missing.join(', ')}`);\n    if (unexpected.length) errors.push(`Unexpected columns: ${unexpected.join(', ')}`);\n    const allowedBlank = sourceFile === 'orders.csv' ? new Set(['actual_delivery_date']) : new Set();\n    for (const key of spec.fields) {\n      if (!allowedBlank.has(key) && (!Object.prototype.hasOwnProperty.call(row, key) || String(row[key] ?? '').trim() === '')) {\n        errors.push(`${key} is required`);\n      }\n    }\n    const keyValue = String(row[spec.pk] ?? '').trim();\n    if (keyValue) {\n      const key = `${spec.pk}:${keyValue}`;\n      if (seen.has(key)) errors.push(`Duplicate ${spec.pk}: ${keyValue}`);\n      seen.add(key);\n    }\n    if (sourceFile === 'customers.csv' || sourceFile === 'carriers.csv') {\n      if (!['US','IN'].includes(row.market)) errors.push('market must be US or IN');\n    }\n    if (sourceFile === 'products.csv') {\n      if (!integer(row.shelf_life_days) || Number(row.shelf_life_days) <= 0) errors.push('shelf_life_days must be a positive integer');\n    }\n    if (sourceFile === 'orders.csv') {\n      if (!['US','IN'].includes(row.market)) errors.push('market must be US or IN');\n      if (!['USD','INR'].includes(row.currency_code)) errors.push('currency_code must be USD or INR');\n      if ((row.market === 'US' && row.currency_code !== 'USD') || (row.market === 'IN' && row.currency_code !== 'INR')) errors.push('currency_code does not match market');\n      if (!['delivered','cancelled'].includes(row.order_status)) errors.push('order_status must be delivered or cancelled');\n      if (!isIsoDate(row.order_date)) errors.push('order_date must be a valid ISO date');\n      if (!isIsoDate(row.promised_delivery_date)) errors.push('promised_delivery_date must be a valid ISO date');\n      if (isIsoDate(row.order_date) && isIsoDate(row.promised_delivery_date) && row.promised_delivery_date < row.order_date) errors.push('promised_delivery_date precedes order_date');\n      if (row.actual_delivery_date && !isIsoDate(row.actual_delivery_date)) errors.push('actual_delivery_date must be blank or a valid ISO date');\n      if (row.order_status === 'cancelled' && String(row.actual_delivery_date ?? '').trim() !== '') errors.push('cancelled orders must have a blank actual_delivery_date');\n      if (row.order_status === 'delivered' && !String(row.actual_delivery_date ?? '').trim()) errors.push('delivered orders require actual_delivery_date');\n      if (isIsoDate(row.order_date) && isIsoDate(row.actual_delivery_date) && row.actual_delivery_date < row.order_date) errors.push('actual_delivery_date precedes order_date');\n    }\n    if (sourceFile === 'order_lines.csv') {\n      if (!integer(row.line_number) || Number(row.line_number) <= 0) errors.push('line_number must be a positive integer');\n      if (!integer(row.ordered_qty) || Number(row.ordered_qty) <= 0) errors.push('ordered_qty must be a positive integer');\n      if (!integer(row.delivered_qty) || Number(row.delivered_qty) < 0) errors.push('delivered_qty must be a nonnegative integer');\n      if (integer(row.ordered_qty) && integer(row.delivered_qty) && Number(row.delivered_qty) > Number(row.ordered_qty)) errors.push('delivered_qty cannot exceed ordered_qty');\n      if (!Number.isFinite(Number(row.unit_price_local)) || Number(row.unit_price_local) <= 0) errors.push('unit_price_local must be a positive number');\n      if (!['USD','INR'].includes(row.currency_code)) errors.push('currency_code must be USD or INR');\n      const pair = `${String(row.order_id ?? '').trim()}::${String(row.line_number ?? '').trim()}`;\n      const pairKey = `order_line_pair:${pair}`;\n      if (row.order_id && row.line_number && seen.has(pairKey)) errors.push(`Duplicate order_id + line_number: ${pair}`);\n      if (row.order_id && row.line_number) seen.add(pairKey);\n    }\n  }\n  if (errors.length) rejected.push({ row_number: i + 2, record: row, errors });\n  else valid.push(row);\n}\nconst rejectedCount = rejected.length;\nconst validCount = valid.length;\nconst errorSummary = rejectedCount\n  ? JSON.stringify(rejected.slice(0, 25).map(item => ({ row_number: item.row_number, errors: item.errors }))).slice(0, 4500)\n  : null;\nreturn [{ json: {\n  batch_id: metadata.batch_id,\n  started_at: metadata.started_at,\n  source_file: sourceFile,\n  file_path: metadata.file_path,\n  input_rows: input.length,\n  accepted_rows: validCount,\n  rejected_rows: rejectedCount,\n  valid_records: valid,\n  rejected_records: rejected,\n  error_summary: errorSummary,\n  foreign_key_note: 'Cross-file foreign keys and existing primary-key conflicts are enforced by PostgreSQL; any insert failure rolls back the file transaction.'\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -100,
+        0
+      ],
+      "id": "0d64568c-95fb-4d76-a110-30d6c98e085f",
+      "name": "Validate & Summarize"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const s = $('Validate & Summarize').first().json;\nreturn [{json: {\n  batch_id: s.batch_id,\n  source_file: s.source_file,\n  started_at: s.started_at,\n  input_rows: s.input_rows,\n  accepted_rows: 0,\n  rejected_rows: s.rejected_rows,\n  load_status: 'started',\n  error_summary: s.error_summary\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        0
+      ],
+      "id": "45ca7e02-6c50-44a9-954a-b6f089caad68",
+      "name": "Prepare Audit Started"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "supply_chain"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "load_audit"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {
+          "replaceEmptyStrings": true
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        340,
+        0
+      ],
+      "id": "1aaee9aa-9962-4e38-bfd3-7be51f1d64e4",
+      "name": "Insert Audit Started",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c7e86a36-cac3-4fa1-a1a4-6962262b6b23",
+              "leftValue": "={{ $('Validate & Summarize').first().json.rejected_rows }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "6ff655f8-75b1-41a5-9918-2dba7959bcf0",
+      "name": "Has Rejected Rows?"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const s = $('Validate & Summarize').first().json;\nreturn [{json: {\n  batch_id: s.batch_id,\n  source_file: s.source_file,\n  rejection_count: s.rejected_rows,\n  rejected_records: s.rejected_records,\n  note: 'Review these structured rejected rows in this node output. They are not inserted into analytical tables.'\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -140
+      ],
+      "id": "235921e8-344a-43c9-b37a-77f40b65237b",
+      "name": "Rejected Records — Review in Execution"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f8e37c13-acd3-46ab-92fb-3e36b25c3d52",
+              "leftValue": "={{ $('Validate & Summarize').first().json.accepted_rows }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "1b870453-f60e-47ab-ae16-76898b0f7f76",
+      "name": "Has Valid Rows?"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const s = $('Validate & Summarize').first().json;\nreturn s.valid_records.map(record => ({json: {source_file: s.source_file, record}}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        -140
+      ],
+      "id": "7753f59e-c291-4f5a-96c1-2a5b86e0cbca",
+      "name": "Build Valid Row Items"
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "865c768f-36d6-4620-9114-736b456f20ce",
+                    "leftValue": "={{ $json.source_file }}",
+                    "rightValue": "customers.csv",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "customers"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d1cacaca-f129-40b0-b7a5-0ec75a46832c",
+                    "leftValue": "={{ $json.source_file }}",
+                    "rightValue": "products.csv",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "products"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cf1a2b59-2461-4cd2-b610-dc532466b0fe",
+                    "leftValue": "={{ $json.source_file }}",
+                    "rightValue": "carriers.csv",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "carriers"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "96586531-b1c4-43c7-a2f6-49838d05ee1a",
+                    "leftValue": "={{ $json.source_file }}",
+                    "rightValue": "orders.csv",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "orders"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b8bb1416-5aba-4d6c-9fcc-9ce5b4a4a0f5",
+                    "leftValue": "={{ $json.source_file }}",
+                    "rightValue": "order_lines.csv",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "order_lines"
+            }
+          ],
+          "options": {
+            "fallbackOutput": "extra"
+          }
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1480,
+        -140
+      ],
+      "id": "c1f1f94c-66a7-4e80-85ef-0116265fee53",
+      "name": "Route by Filename"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return $input.all().map((item, index) => ({json: item.json.record, pairedItem: {item: index}}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1720,
+        -520
+      ],
+      "id": "94b59f61-3e05-4800-b36a-623caa39e738",
+      "name": "Prepare customers Rows"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "supply_chain"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "customers"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {
+          "queryBatching": "transaction",
+          "replaceEmptyStrings": true
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        1940,
+        -520
+      ],
+      "id": "77d73194-f0d6-4334-964d-74f4efa6f43e",
+      "name": "Insert customers",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return $input.all().map((item, index) => ({json: item.json.record, pairedItem: {item: index}}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1720,
+        -310
+      ],
+      "id": "7842461b-34d6-4fce-9f35-b0229dc15c7d",
+      "name": "Prepare products Rows"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "supply_chain"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "products"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {
+          "queryBatching": "transaction",
+          "replaceEmptyStrings": true
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        1940,
+        -310
+      ],
+      "id": "20a7ec8d-9549-454f-a6dc-c603fe0c55be",
+      "name": "Insert products",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return $input.all().map((item, index) => ({json: item.json.record, pairedItem: {item: index}}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1720,
+        -100
+      ],
+      "id": "48630ba1-7b7e-40c0-a1a2-98da66c47678",
+      "name": "Prepare carriers Rows"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "supply_chain"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "carriers"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {
+          "queryBatching": "transaction",
+          "replaceEmptyStrings": true
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        1940,
+        -100
+      ],
+      "id": "e8395d6c-5674-4f4f-b9a0-5f228d9c9190",
+      "name": "Insert carriers",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return $input.all().map((item, index) => ({json: item.json.record, pairedItem: {item: index}}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1720,
+        110
+      ],
+      "id": "4ab0ff0e-ebe1-4d25-b4b1-5b98de3543a1",
+      "name": "Prepare orders Rows"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "supply_chain"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "orders"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {
+          "queryBatching": "transaction",
+          "replaceEmptyStrings": true
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        1940,
+        110
+      ],
+      "id": "9ca3b996-6855-4107-8d80-b867f8a4f3c4",
+      "name": "Insert orders",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return $input.all().map((item, index) => ({json: item.json.record, pairedItem: {item: index}}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1720,
+        320
+      ],
+      "id": "8ff8d242-4a01-4c74-a85f-d8423666c1a8",
+      "name": "Prepare order_lines Rows"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "supply_chain"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "order_lines"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {
+          "queryBatching": "transaction",
+          "replaceEmptyStrings": true
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        1940,
+        320
+      ],
+      "id": "42f07a4a-d787-4104-aaaf-f91378d3400a",
+      "name": "Insert order_lines",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const s = $('Validate & Summarize').first().json;\nconst payload = {\n  batch_id: s.batch_id,\n  input_rows: s.input_rows,\n  accepted_rows: s.accepted_rows,\n  rejected_rows: s.rejected_rows,\n  load_status: 'succeeded',\n  error_summary: s.error_summary\n};\nreturn [{json: {audit_json: JSON.stringify(payload)}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2180,
+        -80
+      ],
+      "id": "4099fd1f-89a8-4ccc-ac0e-b5c662b96ba9",
+      "name": "Build Audit Success Payload"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const s = $('Validate & Summarize').first().json;\nconst payload = {\n  batch_id: s.batch_id,\n  input_rows: s.input_rows,\n  accepted_rows: 0,\n  rejected_rows: s.rejected_rows,\n  load_status: 'failed',\n  error_summary: 'PostgreSQL insert or filename routing failed. The insert node uses transaction batching; inspect the n8n execution details. If PostgreSQL itself is unavailable, the audit row remains started until the database is reachable.'\n};\nreturn [{json: {audit_json: JSON.stringify(payload)}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2180,
+        180
+      ],
+      "id": "b6d57ee1-3a99-4b51-8a6d-9b30cbc0c3d8",
+      "name": "Build Audit Failure Payload"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE supply_chain.load_audit\nSET input_rows = ($1::jsonb ->> 'input_rows')::INTEGER,\n    accepted_rows = ($1::jsonb ->> 'accepted_rows')::INTEGER,\n    rejected_rows = ($1::jsonb ->> 'rejected_rows')::INTEGER,\n    load_status = $1::jsonb ->> 'load_status',\n    error_summary = NULLIF($1::jsonb ->> 'error_summary', '')\nWHERE batch_id = $1::jsonb ->> 'batch_id';",
+        "options": {
+          "queryReplacement": "={{ $json.audit_json }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        2420,
+        40
+      ],
+      "id": "a7ffdd64-774a-4d64-bb21-920c81fa5aab",
+      "name": "Update Load Audit",
+      "alwaysOutputData": true
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Batch Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Batch Metadata": {
+      "main": [
+        [
+          {
+            "node": "Read CSV File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CSV File": {
+      "main": [
+        [
+          {
+            "node": "Extract CSV Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract CSV Rows": {
+      "main": [
+        [
+          {
+            "node": "Validate & Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Summarize": {
+      "main": [
+        [
+          {
+            "node": "Prepare Audit Started",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Audit Started": {
+      "main": [
+        [
+          {
+            "node": "Insert Audit Started",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Audit Started": {
+      "main": [
+        [
+          {
+            "node": "Has Rejected Rows?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Rejected Rows?": {
+      "main": [
+        [
+          {
+            "node": "Rejected Records — Review in Execution",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Has Valid Rows?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rejected Records — Review in Execution": {
+      "main": [
+        [
+          {
+            "node": "Has Valid Rows?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Valid Rows?": {
+      "main": [
+        [
+          {
+            "node": "Build Valid Row Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Audit Success Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Valid Row Items": {
+      "main": [
+        [
+          {
+            "node": "Route by Filename",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Filename": {
+      "main": [
+        [
+          {
+            "node": "Prepare customers Rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare products Rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare carriers Rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare orders Rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare order_lines Rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Audit Failure Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare customers Rows": {
+      "main": [
+        [
+          {
+            "node": "Insert customers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert customers": {
+      "main": [
+        [
+          {
+            "node": "Build Audit Success Payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Audit Failure Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare products Rows": {
+      "main": [
+        [
+          {
+            "node": "Insert products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert products": {
+      "main": [
+        [
+          {
+            "node": "Build Audit Success Payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Audit Failure Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare carriers Rows": {
+      "main": [
+        [
+          {
+            "node": "Insert carriers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert carriers": {
+      "main": [
+        [
+          {
+            "node": "Build Audit Success Payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Audit Failure Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare orders Rows": {
+      "main": [
+        [
+          {
+            "node": "Insert orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert orders": {
+      "main": [
+        [
+          {
+            "node": "Build Audit Success Payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Audit Failure Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare order_lines Rows": {
+      "main": [
+        [
+          {
+            "node": "Insert order_lines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert order_lines": {
+      "main": [
+        [
+          {
+            "node": "Build Audit Success Payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Audit Failure Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Audit Success Payload": {
+      "main": [
+        [
+          {
+            "node": "Update Load Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Audit Failure Payload": {
+      "main": [
+        [
+          {
+            "node": "Update Load Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e5a187ce-5cb0-4b37-851b-b6d60287cf5c",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
