@@ -64,20 +64,20 @@ This project simulates a monthly demand-planning process for 100 high-volume SKU
 
 ### Project 3 · AI-Assisted Order Fulfillment Analytics on Synthetic Data
 
-This project uses a deterministic, fully synthetic dataset generated in the repository, so it does not redistribute the tutorial creator’s restricted files. The records model fictional retail orders across the US and India and support a reproducible demonstration of data validation, ETL, PostgreSQL, SQL, fulfillment KPIs, and an AI-assisted dashboard workflow.
+This project uses a deterministic, fully synthetic dataset generated in the repository, so it does not redistribute the tutorial creator’s restricted files. The records model fictional retail orders across the US and India and support a reproducible demonstration of data validation, PostgreSQL loading, SQL fulfillment KPIs, and an AI-assisted dashboard workflow. n8n automation is optional and is not part of the core project path.
 
 **Planned outputs**
 
 - Reproducible generator and five related synthetic CSV tables.
 - Separate intentionally invalid test fixtures for data-ingestion checks.
 - PostgreSQL schema, quality queries, fulfillment SQL, and dashboard view.
-- Importable n8n workflow JSON with filename routing, validation, rejection review, PostgreSQL inserts, and load audit.
+- Optional n8n workflow draft for future experimentation; it is not required or executed.
 - Dashboard and AI validation log, clearly labeled as synthetic demonstration outputs.
 
 **Data disclosure:** All records are fictional; delivery and partial-fulfillment variation is programmed by the generator. Calculations can demonstrate analytic technique but are not empirical findings, industry benchmarks, or causal evidence. There is no inventory-on-hand or replenishment history, so this is not inventory optimization.
 
-**Tools:** Python · PostgreSQL · SQL · n8n workflow export prepared (runtime test pending) · dashboard tool TBD · AI assistant for drafting and review
-**Status:** Synthetic dataset, documentation, and importable workflow created; workflow not yet tested in n8n/PostgreSQL; dashboard not yet built.
+**Tools:** Python · PostgreSQL · SQL · dashboard tool TBD · AI assistant for drafting and review; n8n optional
+**Status:** Dataset, generator, structural validation, data model, and metric definitions are prepared. SQL results and the dashboard still need to be run and reconciled. n8n is optional; the repository workflow draft is unexecuted and not verified for n8n 2.4.6.
 
 - [Download the synthetic dataset](data/synthetic/)
 - [Read the synthetic-data card](docs/synthetic-data-card.md)
@@ -85,8 +85,8 @@ This project uses a deterministic, fully synthetic dataset generated in the repo
 - [Open the step-by-step project manual](docs/step-by-step-project-instructions.md)
 - [Read the project brief](docs/project-brief.md)
 - [View metric definitions](docs/metric-definitions.md)
-- [Import the CSV to PostgreSQL n8n workflow](n8n/csv-to-postgresql.json)
-- [Read the n8n workflow plan and setup notes](n8n/workflow-plan.md)
+- [Optional n8n workflow draft — unexecuted; not verified for n8n 2.4.6](n8n/csv-to-postgresql.json)
+- [Optional n8n notes and version limitation](n8n/workflow-plan.md)
 - [Browse the project files](.)
 
 <!-- Add a real dashboard screenshot here after the dashboard has been built and validated. -->
@@ -99,7 +99,7 @@ This project uses a deterministic, fully synthetic dataset generated in the repo
 |---|---|---|---|
 | 1. Demand Forecasting & Inventory Planning | Forecasting, ABC-XYZ, safety stock, reorder point | Python, Power BI | Completed |
 | 2. Demand Planning & Forecast Accuracy Management | Rolling backtesting, WAPE, bias, FVA, planner exceptions | Python, HTML, Plotly | Live |
-| 3. AI-Assisted Order Fulfillment Analytics on Synthetic Data | Synthetic data, data quality, SQL, ETL, fulfillment KPIs, AI validation | Python, PostgreSQL, SQL, n8n export prepared, dashboard TBD | In progress |
+| 3. AI-Assisted Order Fulfillment Analytics on Synthetic Data | Synthetic data, data quality, SQL, fulfillment KPIs, AI validation | Python, PostgreSQL, SQL, dashboard TBD; n8n optional | In progress |
 | 4. Supplier Performance & Spend Analysis | Supplier scorecard, spend analysis, sourcing risk | Python, Power BI, SQL | Planned |
 | 5. S&OP Scenario Planning Dashboard | Demand-supply gap, inventory coverage, revenue risk | Power BI, Python | Planned |
 
@@ -119,7 +119,7 @@ This project uses a deterministic, fully synthetic dataset generated in the repo
 
 **Analytics:** Python · Pandas · NumPy · SQL · Excel
 **Visualization:** Power BI · Plotly · Matplotlib · HTML/CSS/JavaScript
-**Workflow and development:** n8n · PostgreSQL · GitHub · VS Code
+**Workflow and development:** PostgreSQL · GitHub · VS Code · n8n optional for Project 3 and not executed
 **AI:** Used as an assistant for drafting and review; final metrics and claims are independently checked.
 
 ## Project Documentation
@@ -132,8 +132,8 @@ For the current fulfillment project:
 - [Data dictionary template](docs/data-dictionary.md)
 - [Metric definitions and field requirements](docs/metric-definitions.md)
 - [Synthetic-data card](docs/synthetic-data-card.md)
-- [Importable n8n workflow](n8n/csv-to-postgresql.json)
-- [n8n workflow plan](n8n/workflow-plan.md)
+- [Optional n8n workflow draft — unexecuted and not verified for n8n 2.4.6](n8n/csv-to-postgresql.json)
+- [Optional n8n reference notes](n8n/workflow-plan.md)
 - [AI usage and validation log](docs/ai-usage-log.md)
 - [Business analysis portfolio template](docs/reference/Supply_Chain_Optimization_BA_Portfolio_Template.docx)
 

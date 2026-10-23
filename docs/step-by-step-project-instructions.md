@@ -10,7 +10,7 @@ A portfolio demonstration that uses generated order, order-line, customer, produ
 
 - relational modeling and SQL;
 
-- ETL automation with n8n;
+- repeatable PostgreSQL loading and SQL-based analytics (n8n automation is optional);
 
 - data-quality and failure-path testing;
 
@@ -81,7 +81,7 @@ python3 src/validate_synthetic_dataset.py
 
 The validator checks expected columns, primary keys, foreign keys, market/currency consistency, date logic, quantity rules, and that orders have lines. It deliberately does **not** calculate or report service KPI results. Resolve any validation error before database loading.
 
-The test fixtures are intentionally invalid. Do not run the structural validator against them and do not copy them into `data/synthetic/`. Their purpose is to test how your n8n workflow rejects bad records.
+The test fixtures are intentionally invalid. Do not run the structural validator against them and do not copy them into `data/synthetic/`. They are optional inputs for testing an ingestion-rejection path if you later choose to build one; n8n is not required for the core project.
 
 ### 1.5 Inspect the files yourself
 
@@ -233,43 +233,15 @@ Add non-secret setup notes to `README.md` or `docs/database-setup.md`: PostgreSQ
 
 **Checkpoint:** the tables load in dependency order, SQL quality checks pass, and `order_service` returns one row per order.
 
-## Phase 4 — Build the n8n workflow
+## Phase 4 — Optional n8n extension (skip for the core project)
 
-The repository includes an importable workflow named **CSV to PostgreSQL** at `n8n/csv-to-postgresql.json`. It handles one file per run, routes by exact filename, inserts accepted rows into the matching table, exposes rejected rows in a separate review branch, and records batch counts in `supply_chain.load_audit`.
+You can skip this entire phase and continue to Phase 5. The core analyst project uses the CSV import in Phase 3, PostgreSQL, SQL analysis, dashboard reconciliation, and clear communication. n8n is not required to demonstrate those skills.
 
-### 4.1 Prepare n8n and PostgreSQL access
+The repository keeps `n8n/csv-to-postgresql.json` as a reference, but it is unexecuted and not suitable to claim as completed work. It uses PostgreSQL node version 2.8, while n8n 2.4.6 provides that node only through version 2.6. Do not import this draft into your current instance. The limitation and source reference are recorded in `n8n/workflow-plan.md`.
 
-Run `sql/01_create_tables.sql` in the database first. The workflow needs the five destination tables and `supply_chain.load_audit`.
+If you later decide to add automation, first create or adapt a workflow for your installed n8n version. Then test it with your own runtime file path and PostgreSQL credentials. Verify clean loads, rejected fixtures, row counts, and duplicate handling before adding it to your portfolio. Keep credentials outside Git.
 
-Make the repository’s `data/synthetic/` and `data/fixtures/` files readable from the **n8n runtime**. Open the **Set Batch Metadata** node and replace its example `file_path` with the absolute path to one CSV as seen inside n8n. On n8n Cloud, use a permitted `/home/node/` path. For Docker, mount the host folder into the container and use the mounted container path. Do not assume a path on your laptop is visible inside n8n, and do not expose your filesystem publicly.
-
-### 4.2 Import and configure the workflow
-
-In n8n, choose **Workflows → Import from File** and select `n8n/csv-to-postgresql.json`. The workflow remains inactive and starts only when you press **Execute Workflow**.
-
-Set the path in **Set Batch Metadata** to one file, starting with `customers.csv`. Then open each PostgreSQL node and select your database credential: `Insert Audit Started`, `Insert customers`, `Insert products`, `Insert carriers`, `Insert orders`, `Insert order_lines`, and `Update Load Audit`. The JSON contains no passwords or credential IDs.
-
-Run one file per execution in this order because of foreign keys: customers, products, carriers, orders, then order lines. Change `file_path` before each run. The workflow routes only the five exact filenames listed above.
-
-### 4.3 Review validation, inserts, and audit results
-
-The workflow validates required fields, duplicate keys within the file, market/currency consistency where available in the row, dates, status, and numeric quantities. It rejects unknown filenames. PostgreSQL enforces database types, foreign keys, and conflicts with records already loaded. A PostgreSQL insert uses transaction batching; a constraint failure should roll back that file’s insert.
-
-If a file contains invalid rows, inspect **Rejected Records — Review in Execution** in the saved run. This simpler workflow keeps the detailed rejected records in n8n execution output; it does **not** create a rejection table or durable rejection file. The audit table stores a bounded error summary and the input/rejected counts.
-
-Check `supply_chain.load_audit` after each run. A completed run is marked `succeeded` with its inserted and rejected counts. A failed insert is marked `failed`; its accepted count is zero because the file insert is transactional. If PostgreSQL itself is unavailable, the workflow may not be able to update the audit row, which will remain `started` for later review.
-
-### 4.4 Test the clean and rejection paths
-
-After loading the clean files in dependency order, set `file_path` to each fixture in `data/fixtures/`. Confirm its invalid rows and row-level reasons appear in the rejection review node, and reconcile the input, inserted, and rejected counts with `load_audit`. The fixture records must not be inserted into the analytical tables.
-
-Try running an already-loaded clean CSV a second time. Its primary-key conflict should fail the transaction and be recorded as failed, not silently skipped. To repeat a successful end-to-end run, use a fresh practice database or reset only this project’s tables after confirming the target database contains no other data.
-
-### 4.5 Record what you actually built
-
-The detailed node map, file-path and credential setup, validation boundaries, tests, and error behavior are documented in `n8n/workflow-plan.md`. Keep the exported JSON credential-free. Describe this as a portfolio demonstration, not a production-grade integration. If you later add durable rejection storage or automatic folder processing, document and test those as separate extensions.
-
-**Checkpoint:** the five clean CSVs load in dependency order, fixture rows reach the rejection review branch, and `load_audit` counts/statuses match the run outcomes.
+**Optional checkpoint:** only if you implement the extension, document the exact n8n version and tests you actually ran. Otherwise, proceed directly to Phase 5.
 
 ## Phase 5 — Run and validate the SQL analyses
 
@@ -489,7 +461,7 @@ Update these files after you complete each phase:
 
 - `docs/project-brief.md`: state actual tasks completed and any scope changes.
 
-- `n8n/workflow-plan.md`: replace plans with the nodes and tests you actually built.
+- `n8n/workflow-plan.md`: if you skip n8n, keep it labeled as an optional, unexecuted reference; update it only if you later build and test that extension.
 
 - `docs/ai-usage-log.md`: record actual AI assistance, edits, and independent checks.
 
@@ -524,9 +496,9 @@ The repository is private. Keep it private while unfinished. Before making it pu
 
 ## Phase 11 — Prepare a credible portfolio summary
 
-A concise portfolio description can say:
+A concise portfolio description, after you have actually completed the listed analysis, can say:
 
-> “Built a deterministic synthetic retail order-fulfillment dataset and an AI-assisted ETL-to-dashboard demonstration using Python, n8n, PostgreSQL, and SQL. Implemented order-level service calculations and validated workflow behavior using isolated invalid-input fixtures. All generated patterns are fictional and are not presented as real operating results.”
+> “Generated and validated a deterministic synthetic retail order-fulfillment dataset, loaded the relational tables into PostgreSQL, and developed SQL analyses for order-level service KPIs. Independently reconciled selected records to documented metric definitions and used AI to assist with drafting, which I reviewed and verified. All records and patterns are fictional; no real-world performance or impact is claimed.”
 
 Only list tools you actually used. Don’t claim operational results, inventory optimization, or realized impact from the generated records.
 
@@ -546,7 +518,7 @@ For internship applications, this project can demonstrate technical workflow, SQ
 
 - [ ] Dashboard totals reconcile to SQL and show denominators.
 
-- [ ] Invalid fixtures are rejected and never mixed with analysis data.
+- [ ] Invalid fixtures are never mixed with analysis data; test an automated rejection branch only if you choose to implement it.
 
 - [ ] AI code and summaries are checked; validations are documented.
 
