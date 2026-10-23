@@ -7,11 +7,17 @@ This guide now uses the **fully synthetic dataset included in this repository**.
 A portfolio demonstration that uses generated order, order-line, customer, product, and carrier data to practice:
 
 - reproducible data generation;
+
 - relational modeling and SQL;
+
 - ETL automation with n8n;
+
 - data-quality and failure-path testing;
+
 - order-level fulfillment KPIs;
+
 - AI-assisted drafting with independent validation;
+
 - a dashboard and an honest business-style case presentation.
 
 **Do not describe this as a real-company inventory optimization.** There are no inventory balances, stock movements, purchase orders, supplier lead times, or actual carrier events in the dataset. The synthetic generator intentionally programs variation by carrier, market, and product category, so resulting patterns are practice examples, not discoveries about reality.
@@ -34,10 +40,14 @@ The repository may be private. Sign in to GitHub before cloning. If you prefer n
 Read these files in order:
 
 1. `README.md` — portfolio-facing overview.
-2. `docs/project-brief.md` — question, scope, and success criteria.
-3. `docs/synthetic-data-card.md` — how the generated data may and may not be interpreted.
-4. `docs/metric-definitions.md` — exact denominators and formulas.
-5. `docs/data-dictionary.md` — field names, row grains, and relationships.
+
+1. `docs/project-brief.md` — question, scope, and success criteria.
+
+1. `docs/synthetic-data-card.md` — how the generated data may and may not be interpreted.
+
+1. `docs/metric-definitions.md` — exact denominators and formulas.
+
+1. `docs/data-dictionary.md` — field names, row grains, and relationships.
 
 The project should be labeled “synthetic dataset demonstration” wherever you show a dashboard, screenshot, video, or portfolio summary. Do not use fabricated stakeholder quotes, interviews, actual business impact, or real-world conclusions.
 
@@ -52,7 +62,7 @@ python3 src/generate_synthetic_dataset.py
 
 On Windows, `python` may be the command instead of `python3`:
 
-```powershell
+```
 python --version
 python src/generate_synthetic_dataset.py
 ```
@@ -78,9 +88,13 @@ The test fixtures are intentionally invalid. Do not run the structural validator
 Open each file or print its header and a few sample rows. Confirm that the files match the data card:
 
 - `orders.csv`: one row per order.
+
 - `order_lines.csv`: one row per order-product line.
+
 - `customers.csv`: one row per customer.
+
 - `products.csv`: one row per SKU.
+
 - `carriers.csv`: one row per carrier.
 
 A useful short command is:
@@ -115,10 +129,14 @@ Your portfolio language must say “in this synthetic sample” or “the genera
 Use these questions as exercises:
 
 1. How do on-time, in-full, and OTIF rates vary by market and order month in the generated data?
-2. Which fictional carrier has the lowest on-time rate, and how many delivered orders are in that group?
-3. Which SKU/category has the most incomplete lines or undelivered units?
-4. How do cancellation rates vary by market and month?
-5. Does the SQL workflow return the expected data grain and handle the intentionally invalid fixtures?
+
+1. Which fictional carrier has the lowest on-time rate, and how many delivered orders are in that group?
+
+1. Which SKU/category has the most incomplete lines or undelivered units?
+
+1. How do cancellation rates vary by market and month?
+
+1. Does the SQL workflow return the expected data grain and handle the intentionally invalid fixtures?
 
 The business-like recommendation should be explicitly hypothetical, such as: “In an actual operation, this segment would be a candidate for investigation. The synthetic records do not establish a real operational issue.”
 
@@ -127,12 +145,19 @@ The business-like recommendation should be explicitly hypothetical, such as: “
 Definitions are in `docs/metric-definitions.md`. Follow these rules:
 
 - Count orders using distinct order IDs, not line rows.
+
 - Exclude cancelled orders from delivery-service denominators; report cancellations separately.
+
 - Calculate order in-full status by checking **every line**; extra units for one SKU must not offset a shortage in another.
+
 - Calculate OTIF as the direct intersection of on-time and in-full at order level.
+
 - Calculate unit fill rate as total delivered units ÷ total ordered units for delivered orders, and label it a unit-weighted measure.
+
 - Use the order month consistently for monthly cohorts unless a visual explicitly uses delivery month.
+
 - Show denominators or eligible order counts with percentages.
+
 - Keep USD and INR amounts separate. This dataset has no historical FX table.
 
 **Checkpoint:** you can distinguish order count, line count, unit fill rate, in-full order rate, on-time rate, and OTIF.
@@ -225,25 +250,38 @@ Create a workflow called `Synthetic CSV to PostgreSQL`. You can either build one
 Load in this order because of database foreign keys:
 
 1. customers;
-2. products;
-3. carriers;
-4. orders;
-5. order lines.
+
+1. products;
+
+1. carriers;
+
+1. orders;
+
+1. order lines.
 
 ### 4.3 Add the workflow stages
 
 For each file, create equivalent nodes for the following steps:
 
 1. **Manual Trigger:** starts one controlled run.
-2. **Read/Upload File:** obtain a single CSV in the n8n runtime.
-3. **Set Metadata:** add a batch ID, source filename, and start timestamp.
-4. **CSV Extract/Parse:** output one structured record per row; keep IDs as strings.
-5. **Schema Check:** verify required columns match the file’s dictionary before mapping.
-6. **Row Validation:** check nonblank keys, allowed market/currency/status, valid dates, integer/nonnegative quantities, unique IDs, and parent keys.
-7. **Reject Branch:** collect invalid rows with a short reason; do not silently drop them.
-8. **PostgreSQL Insert:** insert accepted records into the matching `supply_chain` table using parameterized values or the supported PostgreSQL node. Never build SQL by concatenating raw CSV text.
-9. **Load Audit:** update `supply_chain.load_audit` with counts and `succeeded` or `failed` status. The DDL requires a unique batch ID and a visible final status.
-10. **Error Handling:** surface connection/parser/constraint failures and preserve a safe diagnostic summary without logging credentials.
+
+1. **Read/Upload File:** obtain a single CSV in the n8n runtime.
+
+1. **Set Metadata:** add a batch ID, source filename, and start timestamp.
+
+1. **CSV Extract/Parse:** output one structured record per row; keep IDs as strings.
+
+1. **Schema Check:** verify required columns match the file’s dictionary before mapping.
+
+1. **Row Validation:** check nonblank keys, allowed market/currency/status, valid dates, integer/nonnegative quantities, unique IDs, and parent keys.
+
+1. **Reject Branch:** collect invalid rows with a short reason; do not silently drop them.
+
+1. **PostgreSQL Insert:** insert accepted records into the matching `supply_chain` table using parameterized values or the supported PostgreSQL node. Never build SQL by concatenating raw CSV text.
+
+1. **Load Audit:** update `supply_chain.load_audit` with counts and `succeeded` or `failed` status. The DDL requires a unique batch ID and a visible final status.
+
+1. **Error Handling:** surface connection/parser/constraint failures and preserve a safe diagnostic summary without logging credentials.
 
 Use a stable batch ID. Decide what happens if the same batch is run twice: reject it as already processed, or stage then merge with conflict handling. Do not hide primary-key conflicts and report success.
 
@@ -252,6 +290,7 @@ Use a stable batch ID. Decide what happens if the same batch is run twice: rejec
 The fixture files are purposely bad, so send them through the validation path but **do not insert them into the final analysis tables**:
 
 - `data/fixtures/orders_validation_fixture.csv` includes a duplicate order ID, malformed date, unsupported market/currency, and blank ID.
+
 - `data/fixtures/order_lines_validation_fixture.csv` includes a duplicate line ID, orphan order, negative quantity, and non-integer quantity.
 
 For each fixture, capture the rejected-row count and reasons. Test a database outage or invalid credential in a local safe environment if possible; do not publish credentials or error screenshots containing secrets.
@@ -282,9 +321,13 @@ These queries are examples over the synthetic tables. Their output is not a real
 Select a small set of order IDs from different statuses and manually compare `orders.csv` with all matching lines in `order_lines.csv`:
 
 - For a delivered order, compare actual date with promised date.
+
 - For each line, compare delivered quantity with ordered quantity.
+
 - Mark the order in-full only if every line is in-full.
+
 - Mark OTIF only if the order is both in-full and on-time.
+
 - For a cancelled order, confirm it is excluded from delivery-service rates but counted in submitted orders/cancellations.
 
 Record the sample IDs and your checks in `tests/` without changing the generated data. Re-run the SQL queries and compare the classification. Also confirm OTIF is no larger than either on-time or in-full rate when they share the same denominator.
@@ -314,11 +357,17 @@ Give it the exact schema and metric definitions. Ask it to list missing assumpti
 Check that the model:
 
 - uses columns that really exist;
+
 - aggregates order lines to order grain before order KPIs;
+
 - applies the cancellation filter consistently;
+
 - uses actual vs promised dates correctly;
+
 - checks every order line for the in-full flag;
+
 - does not combine USD and INR;
+
 - does not infer inventory or root causes.
 
 Run its query against PostgreSQL. Compare it with the committed SQL and manually checked sample orders. Save the prompt summary, model draft, your final changes, and validation method in `docs/ai-usage-log.md`.
@@ -336,10 +385,14 @@ Use **Power BI Desktop** if you have access to it, since it is a recognizable an
 ### 7.1 Connect Power BI to PostgreSQL
 
 1. Open Power BI Desktop and choose **Get Data → PostgreSQL database**.
-2. Enter your local/hosted server and database (`supply_chain_portfolio`). Use private credentials; do not record the password in the project.
-3. Select `supply_chain.order_service`, `supply_chain.order_lines`, `supply_chain.customers`, `supply_chain.products`, and `supply_chain.carriers`. Do not also import the raw `orders` table for this report; the view already has one row per order.
-4. Confirm relationship directions and keys. Connect `order_service` (one row per order) to `order_lines` (many rows per order) by `order_id`; connect customer, product, and carrier dimensions through their IDs.
-5. Add a page-level or report-level text notice: **Synthetic demonstration — not real business performance.**
+
+1. Enter your local/hosted server and database (`supply_chain_portfolio`). Use private credentials; do not record the password in the project.
+
+1. Select `supply_chain.order_service`, `supply_chain.order_lines`, `supply_chain.customers`, `supply_chain.products`, and `supply_chain.carriers`. Do not also import the raw `orders` table for this report; the view already has one row per order.
+
+1. Confirm relationship directions and keys. Connect `order_service` (one row per order) to `order_lines` (many rows per order) by `order_id`; connect customer, product, and carrier dimensions through their IDs.
+
+1. Add a page-level or report-level text notice: **Synthetic demonstration — not real business performance.**
 
 If Power BI cannot connect directly in your environment, export query results from `psql` or pgAdmin and state that the dashboard uses static synthetic extracts. Don’t upload a publicly reachable database.
 
@@ -347,7 +400,7 @@ If Power BI cannot connect directly in your environment, export query results fr
 
 Use the SQL `order_service` view, or create equivalent DAX measures only after checking the view’s grain and flags. Example measures for the one-row-per-order view:
 
-```DAX
+```
 Submitted Orders = DISTINCTCOUNT(order_service[order_id])
 
 Delivered Orders =
@@ -398,7 +451,7 @@ DIVIDE(
 
 For unit fill rate use line-level totals from the line table, restricted to delivered orders, and verify the relationship does not duplicate line rows:
 
-```DAX
+```
 Unit Fill Rate =
 DIVIDE(
     CALCULATE(SUM(order_lines[delivered_qty]), order_service[order_status] = "delivered"),
@@ -431,9 +484,13 @@ Compare each KPI card with the equivalent SQL query for the same filters and dat
 For each query output you choose to discuss, record in a findings log:
 
 - query name and exact filter/date basis;
+
 - segment and numerator/denominator;
+
 - result from the synthetic data;
+
 - a statement that the pattern is programmed/illustrative, not empirical;
+
 - what a real analyst would need to verify before action.
 
 Do not imply a generated segment’s rate was “discovered” as if it came from a real operation. Since the generator intentionally varies groups, say that the project demonstrates whether the pipeline can surface those constructed patterns.
@@ -457,12 +514,19 @@ Do not estimate cost savings, service improvement, customer retention, or invent
 Update these files after you complete each phase:
 
 - `docs/synthetic-data-card.md`: keep generator details, intended use, and limitations current.
+
 - `docs/data-dictionary.md`: record actual schemas, grains, keys, and validation outcomes.
+
 - `docs/metric-definitions.md`: document final formula and display definitions.
+
 - `docs/project-brief.md`: state actual tasks completed and any scope changes.
+
 - `n8n/workflow-plan.md`: replace plans with the nodes and tests you actually built.
+
 - `docs/ai-usage-log.md`: record actual AI assistance, edits, and independent checks.
+
 - `README.md`: include a clear project summary, synthetic-data disclosure, status, links, and only completed outputs.
+
 - `docs/limitations.md`: include that the dataset is synthetic, generator-controlled, and lacks inventory history and real costs.
 
 Do not leave placeholders in the portfolio-facing README. Where work is incomplete, state “not yet built” rather than implying it exists.
@@ -503,12 +567,21 @@ For internship applications, this project can demonstrate technical workflow, SQ
 ## Final checklist
 
 - [ ] Generator runs from the README command and uses the documented seed.
+
 - [ ] Structural validator passes on clean files.
+
 - [ ] Generated data is prominently labeled synthetic in README and dashboard.
+
 - [ ] The original non-redistributable tutorial data is not in Git.
+
 - [ ] SQL uses correct grain, cancellation rules, and currency boundaries.
+
 - [ ] Dashboard totals reconcile to SQL and show denominators.
+
 - [ ] Invalid fixtures are rejected and never mixed with analysis data.
+
 - [ ] AI code and summaries are checked; validations are documented.
+
 - [ ] Recommendations and resume wording do not claim real-world performance or impact.
+
 - [ ] No credentials, private data, or unapproved third-party content is committed.
