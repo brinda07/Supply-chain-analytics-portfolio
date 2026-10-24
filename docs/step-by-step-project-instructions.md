@@ -270,7 +270,7 @@ Select a small set of order IDs from different statuses and manually compare `or
 
 - For a cancelled order, confirm it is excluded from delivery-service rates but counted in submitted orders/cancellations.
 
-Record the sample IDs and your checks in `tests/` without changing the generated data. Re-run the SQL queries and compare the classification. Also confirm OTIF is no larger than either on-time or in-full rate when they share the same denominator.
+The repository records two worked examples in [`tests/manual-kpi-validation.md`](../tests/manual-kpi-validation.md): delivered order `ORD-000001` and cancelled order `ORD-000036`. Re-run the source queries there, then add at least one late delivered order and one short-line order to your evidence without changing the generated data. Also confirm OTIF is no larger than either on-time or in-full rate when they share the same denominator.
 
 ### 5.3 Protect against join-grain mistakes
 
