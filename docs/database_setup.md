@@ -13,6 +13,7 @@ This file records the implementation record and provides a reproducibility refer
 - **Database:** `supply_chain_portfolio`
 - **Schema:** `supply_chain`
 
+
 ## Completed data and SQL workflow
 
 1. Generated the synthetic tables:
