@@ -1,4 +1,4 @@
-# Metric Definitions — Synthetic Dataset
+# Metric Definitions 
 
 These measures are computable from the generated schema when implemented as specified. Any values produced describe **only generated records**. Do not use them as evidence of a real company’s performance.
 
@@ -22,7 +22,3 @@ These measures are computable from the generated schema when implemented as spec
 - Show the number of eligible orders whenever a percentage is shown. Rates with different eligibility denominators are not directly comparable.
 - Use the order date for cohort month unless the chart explicitly says otherwise. Do not mix order-month and delivery-month groupings.
 - KPI calculations should use only the clean generated tables loaded from `data/synthetic/`.
-
-## Synthetic-data interpretation warning
-
-The generator intentionally varies late-delivery and partial-fulfillment probabilities by market, carrier, and product category to make the example useful for segmentation and validation practice. A finding from this dataset is a demonstration that the analysis can identify a programmed pattern. It is not an independent discovery, a causal explanation, or a real benchmark.
