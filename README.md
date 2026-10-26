@@ -22,46 +22,6 @@ I’m currently building toward **Supply Chain Analyst internship opportunities*
 
 ## Featured Projects
 
-### Project 1 · Demand Forecasting & Inventory Planning
-
-This project uses historical store sales data to build a demand-driven inventory planning framework. It forecasts near-term demand, classifies inventory risk using ABC-XYZ logic, calculates safety stock and reorder points, and identifies high-priority replenishment items.
-
-**Key outputs**
-
-- Forecasted next 30-day demand by store-family.
-- ABC-XYZ inventory classification.
-- Safety stock and reorder-point calculations.
-- Priority replenishment recommendation table.
-- Power BI dashboard for executive review.
-
-**Tools:** Python · Pandas · NumPy · Power BI · GitHub · VS Code
-**Status:** Completed
-**Project links:** Add the project repository and dashboard/PDF links here when available.
-
----
-
-### Project 2 · Demand Planning & Forecast Accuracy Management
-
-This project simulates a monthly demand-planning process for 100 high-volume SKUs. It compares six explainable forecast models through rolling backtesting, uses chronological holdout validation, measures forecast error and bias, and prioritizes high-risk SKUs for planner review.
-
-**Key outputs**
-
-- 52-week training window and 13-week forecast horizon.
-- Six forecast models compared through rolling backtesting.
-- Independent holdout validation designed to prevent future-data leakage.
-- Champion-model selection by SKU.
-- Forecast bias and Forecast Value Added (FVA) analysis.
-- Planner exception queue based on demand volume, error, and bias.
-- Interactive HTML and Plotly dashboard published with GitHub Pages.
-
-**Holdout results:** 34.3% WAPE · 65.7% forecast accuracy · +3.1% bias · positive FVA for 75 of 100 SKUs.
-
-**Tools:** Python · Pandas · NumPy · HTML/CSS/JavaScript · Plotly · Matplotlib · GitHub Pages
-**Status:** Live
-**Project links:** Add the live dashboard and project repository links here when available.
-
----
-
 ### Project 3 · AI-Assisted Order Fulfillment Analytics on Synthetic Data
 
 This project uses a deterministic, fully synthetic dataset generated in the repository, so it does not redistribute the tutorial creator’s restricted files. It demonstrates a complete analyst workflow from reproducible data generation through SQL-based KPI analysis and a Power BI dashboard. The business, customers, products, carriers, orders, prices, and delivery events are fictional.
