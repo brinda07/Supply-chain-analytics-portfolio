@@ -39,7 +39,6 @@ This project uses a deterministic, fully synthetic dataset generated in the repo
 - Connected Power BI to PostgreSQL, loaded `order_service`, `order_lines`, `customers`, `products`, and `carriers`, built the relationship model and seven named KPI measures, and created three report pages: **Fulfillment Overview**, **Diagnostic Segments**, and **Data & Methodology**.
 - Used AI assistance for schema understanding, SQL review, KPI validation, PostgreSQL troubleshooting, dashboard design review, and documentation support; analytical claims remain subject to human verification.
 
-**Not implemented:** n8n or other workflow automation. The CSV import and SQL workflow described here is the actual project process; an older n8n draft in the repository was not used.
 
 **What still needs your input for a reviewer-ready repo:** add the actual Power BI `.pbix` file or sanitized screenshots of its three pages, then write your findings and recommendations using the values and denominators in your dashboard. Those visual artifacts and result-specific conclusions are not currently stored in this repository.
 
