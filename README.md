@@ -90,21 +90,6 @@ An older, unexecuted n8n workflow draft remains under `n8n/` for reference only;
 **Workflow and development:** PostgreSQL · GitHub · VS Code · manual CSV loading for Project 3; no n8n automation
 **AI:** Used as an assistant for drafting and review; final metrics and claims are independently checked.
 
-## Project Documentation
-
-For the current fulfillment project:
-
-- [Detailed step-by-step build instructions](docs/step-by-step-project-instructions.md)
-- [Project build guide](docs/project-build-guide.md)
-- [Project brief](docs/project-brief.md)
-- [Project explainer and findings guide](docs/project-explainer.md)
-- [Data dictionary and table grains](docs/data-dictionary.md)
-- [Metric definitions and field requirements](docs/metric-definitions.md)
-- [Manual KPI validation evidence](tests/manual-kpi-validation.md)
-- [Synthetic-data card](docs/synthetic-data-card.md)
-- [Power BI artifact checklist](dashboard/README.md)
-- [AI usage and validation log](docs/ai-usage-log.md)
-- [Business analysis portfolio template](docs/reference/Supply_Chain_Optimization_BA_Portfolio_Template.docx)
 
 ## Contact
 
