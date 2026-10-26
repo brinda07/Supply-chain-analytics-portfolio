@@ -28,15 +28,6 @@ The analytical dataset is limited to the clean generated CSV files under `data/s
 - The dataset contains no on-hand inventory, stock movements, purchase orders, supplier lead times, actual carrier event history, costs of failure, or real financial impact.
 - Do not claim actual company improvement, savings, service performance, stockout causes, safety stock, or reorder points from these files.
 
-## Recommended portfolio disclosure
-
-> “I built and analyzed a deterministic synthetic dataset to demonstrate an order-fulfillment ETL and analytics workflow. The records and programmed patterns are fictional; metrics are used to demonstrate calculation and validation, not to describe a real business.”
-
-## Reproducibility
-
-From the repository root:
-
-```bash
 python3 src/generate_synthetic_dataset.py
 ```
 
