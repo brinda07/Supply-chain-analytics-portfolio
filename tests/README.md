@@ -11,7 +11,3 @@ The repository includes the [manual KPI validation note](manual-kpi-validation.m
 ## Database and dashboard result evidence
 
 The author reports creating the PostgreSQL tables/view and Power BI model, measures, and pages. Query-result exports, screenshots, and the `.pbix` report are not in the repository yet. Add a safe-to-share Power BI file or sanitized screenshots under `dashboard/` as described in [`dashboard/README.md`](../dashboard/README.md). If you have already reconciled each Power BI measure to SQL, record the filters and matching values; otherwise perform that comparison before claiming reconciliation.
-
-## Not implemented
-
-n8n load-audit automation and repeat-load automation were not implemented. Do not list those as completed tests. Analytical tables and KPI calculations should use only the clean generated files under `data/synthetic/`.
