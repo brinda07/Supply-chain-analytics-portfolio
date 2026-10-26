@@ -55,24 +55,12 @@ This project uses a deterministic, fully synthetic dataset generated in the repo
 | 4. Supplier Performance & Spend Analysis | Supplier scorecard, spend analysis, sourcing risk | Python, Power BI, SQL | Planned |
 | 5. S&OP Scenario Planning Dashboard | Demand-supply gap, inventory coverage, revenue risk | Power BI, Python | Planned |
 
-## Skills Demonstrated
-
-- Demand forecasting and forecast-accuracy measurement.
-- Rolling backtesting and chronological model validation.
-- WAPE, MAPE, bias, MAE, and Forecast Value Added.
-- Exception-based demand planning.
-- Inventory planning, ABC-XYZ classification, safety stock, and reorder points.
-- Data cleaning, transformation, SQL, and relational modeling.
-- Power BI, HTML, and Plotly dashboard design.
-- Business recommendation writing and project documentation.
-- Responsible AI-assisted analysis, including review and independent validation.
 
 ## Tools
 
-**Analytics:** Python · Pandas · NumPy · SQL · Excel
-**Visualization:** Power BI · Plotly · Matplotlib · HTML/CSS/JavaScript
-**Workflow and development:** PostgreSQL · GitHub · VS Code · manual CSV loading for Project 3; no n8n automation
-**AI:** Used as an assistant for drafting and review; final metrics and claims are independently checked.
+**Analytics:** Python · SQL · Power BI
+**Visualization:** Power BI 
+**Workflow and development:** PostgreSQL · GitHub · VS Code 
 
 
 ## Contact
