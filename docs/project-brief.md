@@ -1,55 +1,48 @@
-# Project Brief
+# Project Brief — Completed Implementation
 
 ## Project at a glance
 
 - **Title:** AI-Assisted Order Fulfillment Analytics on a Synthetic Retail Dataset
-- **Type:** Portfolio skills demonstration using fully synthetic, deterministic records.
-- **Business scenario:** A fictional specialty-food retailer serves wholesale customers in the US and India and wants visibility into fulfillment reliability.
-- **Primary question:** How can an analyst identify segments in this generated sample that warrant investigation, and independently verify the service measures used to communicate them?
-- **Analyst role:** Independent portfolio analyst; no real stakeholder interviews or operational implementation are claimed.
-- **Core stack:** Python generator and validator, PostgreSQL, SQL, one dashboard tool, and an AI assistant used as a copilot. n8n is an optional extension, not a core requirement.
+- **Type:** Supply chain analyst portfolio project using deterministic, fully synthetic records.
+- **Business scenario:** A fictional specialty-food wholesaler serving customers in the US and India wants visibility into order fulfillment reliability.
+- **Analysis question:** How can an analyst measure on-time and complete delivery, identify differences across the generated sample, and verify the calculations before communicating them?
+- **Core tools used:** Python, PostgreSQL 18, SQL, Power BI, and AI assistance.
+- **Automation status:** n8n and other workflow automation were not implemented. CSVs were loaded manually.
 
-## Problem framing
+## Implemented workflow
 
-The project demonstrates how an analyst can understand order and order-line data, validate its quality, calculate explicitly defined service measures, and present diagnostic cuts by market, product, customer, and carrier. The CSVs can be loaded into PostgreSQL using the documented database-import steps. Any patterns discovered are characteristics of the synthetic data generator, not findings about a real supply chain.
+1. Generated five reproducible synthetic CSV files and validation fixtures.
+2. Ran structural validation on the generated dataset.
+3. Installed PostgreSQL, created the `supply_chain_portfolio` database, and created the `supply_chain` schema and tables.
+4. Imported `customers.csv`, `products.csv`, `carriers.csv`, `orders.csv`, and `order_lines.csv`.
+5. Executed `01_create_tables.sql`, `02_quality_checks.sql`, `03_fulfillment_kpis.sql`, `04_segment_diagnostics.sql`, and `05_dashboard_views.sql`.
+6. Created `supply_chain.order_service`, a one-row-per-order view, and manually checked `ORD-000001` and `ORD-000036` against the service and cancellation rules.
+7. Connected Power BI to PostgreSQL, imported `order_service`, `order_lines`, `customers`, `products`, and `carriers`, built the relationship model and seven KPI measures, and created three pages: Fulfillment Overview, Diagnostic Segments, and Data & Methodology.
+8. Used AI assistance for schema understanding, SQL review, KPI validation, PostgreSQL troubleshooting, dashboard design review, and documentation support.
 
-## Objectives
+The detailed explanation of how these stages fit together, how to interpret each measure, and how to write findings is in [`project-explainer.md`](project-explainer.md).
 
-1. Reproduce the synthetic dataset from a version-controlled generator and fixed seed.
-2. Document each table’s grain, keys, fields, and intended relationships.
-3. Load the synthetic tables into PostgreSQL and run data-quality checks.
-4. Implement order- and line-level fulfillment measures in SQL.
-5. Independently verify the calculations using selected records and documented KPI definitions.
-6. Use AI to draft or review a bounded analysis task, then record human validation.
-7. Build a clear dashboard and communicate the synthetic-data limitation prominently.
+## Measures implemented
 
-Workflow automation with n8n may be added later as a separate extension. Skipping it does not prevent completion of the core analyst project.
+The Power BI report includes Submitted Orders, Delivered Orders, On-Time Rate, In-Full Order Rate, OTIF Rate, Cancellation Rate, and Unit Fill Rate. Their grains and denominator rules are defined in [`metric-definitions.md`](metric-definitions.md). Service rates exclude cancelled orders; cancellation rate uses all submitted orders; unit fill compares delivered units with ordered units on delivered orders.
 
-## Analysis questions
+## What this project demonstrates
 
-- How do order-level on-time, in-full, and OTIF rates vary by market and month in this generated sample?
-- Which products, customers, or carriers appear in lower-service segments in the generated records, and how much order volume do those segments represent?
-- How do cancellations and incomplete order lines affect service measures under the documented denominator rules?
-- Do the data-quality checks and manual record reconciliations support the KPI calculations and reveal any data limitations?
+- Reproducible synthetic-data generation and structural validation.
+- Relational modeling, primary/foreign keys, and PostgreSQL table creation/import.
+- SQL data checks, KPI calculation, diagnostic segmentation, and a dashboard-ready order-level view.
+- Manual validation of order-level KPI logic against source records.
+- Power BI data modeling, DAX measure concepts, and multi-page reporting.
+- Responsible use of AI as an assistant, with human review of analysis claims.
 
-These are practice questions. Their answers describe only this constructed dataset and must not be presented as empirical or causal real-world conclusions.
+## Interpretation and boundaries
 
-## Scope and boundaries
+Every record is fictional. The generator intentionally programs variations in delivery and partial fulfillment so that the analyst can practice reporting and validation. Any difference seen by market, carrier, customer segment, or product is a property of this generated sample—not evidence of actual carrier/customer performance, a causal explanation, or an industry benchmark.
 
-**In scope:** synthetic orders, order lines, customers, products, carriers; data validation; relational modeling; PostgreSQL loading; service KPI calculations; dashboard and AI-validation process. n8n-based workflow automation is optional.
+The data does not contain inventory on hand, stock movements, purchase orders, suppliers, actual carrier scans, contractual service targets, actual costs, or intervention outcomes. Do not claim inventory optimization, root causes, savings, or real-world service improvement.
 
-**Out of scope:** real company performance, actual supplier/carrier contract performance, stockout diagnosis, inventory optimization, safety stock, reorder points, realized cost savings, and claims of implemented business change. The dataset does not contain on-hand inventory or replenishment history.
+The `load_audit` table was created as part of the schema. Since no automation was implemented, do not claim that an automated process wrote or monitored load batches unless you have separate evidence that you populated it.
 
-## Deliverables
+## Remaining repository publication work
 
-- `data/synthetic/` reproducible CSV tables and manifest.
-- `src/generate_synthetic_dataset.py` deterministic generator and separate `data/fixtures/` invalid test inputs.
-- Data dictionary, metric definitions, source/data card, and limitation disclosures.
-- SQL DDL, data-quality checks, KPI queries, and diagnostic queries.
-- Dashboard with clear “synthetic demonstration” labeling.
-- AI use/validation log, README, and a short project walkthrough.
-- **Optional only:** the n8n JSON and notes under `n8n/` are unexecuted reference material, are not needed for the core deliverable, and have not been verified for n8n 2.4.6.
-
-## Success criteria for the core project
-
-A reviewer can regenerate and validate the input, understand the row grains, reproduce the SQL, inspect a few KPI classifications against source rows, follow the AI validation, and distinguish generated example patterns from real-world evidence. Success does **not** require a workflow automation tool and does not mean improving any actual company KPI.
+The implementation is complete according to the author’s report, but the GitHub repository does not currently contain the Power BI `.pbix` file or report screenshots. Add the `.pbix` if it can be shared safely, or add sanitized images of the three pages under `dashboard/screenshots/`. Then write the actual findings and recommendations using the report's values, order counts, denominators, filters, and periods. Do not insert invented values; use the fill-in format in [`project-explainer.md`](project-explainer.md).

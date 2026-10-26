@@ -1,8 +1,8 @@
 # Step-by-Step Instructions: Synthetic Order Fulfillment Analytics
 
-This guide now uses the **fully synthetic dataset included in this repository**. It does not redistribute the tutorial creator’s restricted dataset. Follow the phases in sequence. The records are useful for practicing a reproducible analytics workflow, but any results describe only a programmed example—not a real company, market, customer, carrier, or industry benchmark.
+This guide documents the **manual workflow implemented for this project** using the fully synthetic dataset in the repository; it does not redistribute the tutorial creator’s restricted dataset. The author reports completing data generation and validation, PostgreSQL installation/database/table setup and CSV imports, all five SQL scripts, manual KPI checks, and the Power BI model/measures/three report pages. Treat the steps below as reproducibility notes, not as claims that n8n automation was built. The final written findings and Power BI file/screenshots still need to be added to GitHub. Any results describe a programmed example—not a real company, market, customer, carrier, or industry benchmark.
 
-## What you will build
+## What the implementation contains
 
 A portfolio demonstration that uses generated order, order-line, customer, product, and carrier data to practice:
 
@@ -233,9 +233,9 @@ Add non-secret setup notes to `README.md` or `docs/database-setup.md`: PostgreSQ
 
 **Checkpoint:** the tables load in dependency order, SQL quality checks pass, and `order_service` returns one row per order.
 
-## Phase 4 — Optional n8n extension (skip for the core project)
+## Phase 4 — n8n was not implemented
 
-You can skip this entire phase and continue to Phase 5. The core analyst project uses the CSV import in Phase 3, PostgreSQL, SQL analysis, dashboard reconciliation, and clear communication. n8n is not required to demonstrate those skills.
+This project skipped n8n. The implemented analyst workflow uses the manual CSV import in Phase 3, PostgreSQL, SQL analysis, and Power BI. n8n is not required. If you have not already compared Power BI measures against SQL results under identical filters, complete that check before claiming the two layers reconcile.
 
 The repository keeps `n8n/csv-to-postgresql.json` as a reference, but it is unexecuted and not suitable to claim as completed work. It uses PostgreSQL node version 2.8, while n8n 2.4.6 provides that node only through version 2.6. Do not import this draft into your current instance. The limitation and source reference are recorded in `n8n/workflow-plan.md`.
 

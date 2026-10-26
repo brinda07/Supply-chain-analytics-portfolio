@@ -1,78 +1,75 @@
-# Database Setup
+# Database and Power BI Implementation Record
+
+This file records the implementation reported by the project author and provides a reproducibility reference. Do not commit database passwords or connection strings.
 
 ## Environment
 
 - PostgreSQL 18
 - pgAdmin 4
+- Power BI Desktop
 
 ## Database
 
-Database Name:
+- **Database:** `supply_chain_portfolio`
+- **Schema:** `supply_chain`
 
-```text
-supply_chain_portfolio
-```
+## Completed data and SQL workflow
 
-Schema:
+1. Generated the synthetic tables:
 
-```text
-supply_chain
-```
+   ```bash
+   python3 src/generate_synthetic_dataset.py
+   ```
 
-## Setup Steps
+2. Ran structural validation:
 
-1. Generated synthetic datasets using:
+   ```bash
+   python3 src/validate_synthetic_dataset.py
+   ```
 
-```bash
-python src/generate_synthetic_dataset.py
-```
+3. Created the database and ran `sql/01_create_tables.sql`.
+4. Imported the CSVs manually in foreign-key order:
+   - `customers.csv`
+   - `products.csv`
+   - `carriers.csv`
+   - `orders.csv`
+   - `order_lines.csv`
+5. Executed the remaining SQL files:
+   - `sql/02_quality_checks.sql`
+   - `sql/03_fulfillment_kpis.sql`
+   - `sql/04_segment_diagnostics.sql`
+   - `sql/05_dashboard_views.sql`
+6. Created the five analytical tables (`customers`, `products`, `carriers`, `orders`, `order_lines`), the `load_audit` support table, and the `order_service` view.
+7. Manually validated `ORD-000001` and `ORD-000036` for on-time, in-full, OTIF, and cancellation treatment. See [`../tests/manual-kpi-validation.md`](../tests/manual-kpi-validation.md).
 
-2. Validated generated datasets using:
+### CSV load order
 
-```bash
-python src/validate_synthetic_dataset.py
-```
+1. `customers`
+2. `products`
+3. `carriers`
+4. `orders`
+5. `order_lines`
 
-3. Created PostgreSQL database:
+The first three tables are referenced by later order records; order lines depend on both orders and products.
 
-```text
-supply_chain_portfolio
-```
+## Completed Power BI work
 
-4. Executed:
+The author connected Power BI to PostgreSQL and imported:
 
-```text
-sql/01_create_tables.sql
-```
+- `supply_chain.order_service`
+- `supply_chain.order_lines`
+- `supply_chain.customers`
+- `supply_chain.products`
+- `supply_chain.carriers`
 
-5. Imported CSV files:
+The author built the relationship model, these measures—Submitted Orders, Delivered Orders, On-Time Rate, In-Full Order Rate, OTIF Rate, Cancellation Rate, and Unit Fill Rate—and three pages: Fulfillment Overview, Diagnostic Segments, and Data & Methodology.
 
-- customers.csv
-- products.csv
-- carriers.csv
-- orders.csv
-- order_lines.csv
+The `.pbix` file and screenshots have not yet been added to this repository. See [`../dashboard/README.md`](../dashboard/README.md) for the exact filenames and publication checks.
 
-6. Executed:
+## Important implementation boundary
 
-```text
-sql/02_quality_checks.sql
-```
-
-## Table Load Order
-
-1. customers
-2. products
-3. carriers
-4. orders
-5. order_lines
-
-## Validation
-
-Quality checks completed successfully after data import.
+CSV loading was manual. n8n and other automation were not implemented. The `load_audit` table exists in the schema, but its existence does not mean an automated workflow populated it or monitored loads.
 
 ## Credentials
 
-Database credentials are stored locally and are not committed to the repository.
-
-Passwords, connection strings, .env files, and private connection URLs are excluded from source control.
+Database credentials are stored locally and are not committed to the repository. Passwords, connection strings, `.env` files, and private connection URLs must remain outside source control.

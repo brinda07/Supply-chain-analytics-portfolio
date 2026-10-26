@@ -1,40 +1,34 @@
-# Project Build Guide: Synthetic Order Fulfillment Analytics
+# Project Build Guide: What Was Implemented
 
-## Should you use generated data?
+This guide records the actual workflow completed for the order-fulfillment analytics project. Use it as a concise orientation; use the detailed [`project explainer`](project-explainer.md) to understand the model, KPIs, and how to write findings and recommendations.
 
-Use this repository’s synthetic dataset to demonstrate a reproducible analyst workflow: generate and inspect records, validate the schema and relationships, load PostgreSQL, write and check SQL, analyze service KPIs, use AI with review, and communicate the results in a dashboard. The project does not redistribute the tutorial creator’s restricted files.
+## Completed workflow
 
-Synthetic data is **not empirical evidence**. The generator intentionally varies punctuality and partial fulfillment by fictional groups. A result from these rows demonstrates that your analysis can calculate and display a programmed pattern; it is not a discovery about real-world supply chains or an industry benchmark. Label the dataset and every dashboard page as synthetic. Do not claim that a real company improved, that a carrier is genuinely poor, or that inventory caused short shipments.
+```text
+Synthetic data generation
+→ Structural validation
+→ PostgreSQL database/schema and manual CSV loading
+→ SQL quality checks, KPIs, and segment diagnostics
+→ Manual KPI verification
+→ Power BI data model, measures, and report pages
+→ Project documentation and findings write-up
+```
 
-n8n is optional. The core project can use the documented direct CSV-to-PostgreSQL loading steps and focus on data validation, SQL, KPI logic, dashboarding, and communication. The workflow export in `n8n/` is an unexecuted reference, not evidence that you built or ran automation. It has not been verified for n8n 2.4.6.
+## Implementation record
 
-For stronger internship evidence, keep this as a technical demonstration and, if possible, build a separate analysis using an openly licensed real dataset. Do not blend the two sources or imply the synthetic rows are real.
+- **Data:** Generated five synthetic CSV tables and ran the structural validator.
+- **Database:** Installed PostgreSQL 18, created `supply_chain_portfolio`, created the `supply_chain` tables, and imported customers, products, carriers, orders, and order lines.
+- **SQL:** Executed all five project SQL files: DDL, quality checks, fulfillment KPIs, segment diagnostics, and dashboard view creation. The view `supply_chain.order_service` contains one row per order.
+- **Manual KPI check:** Verified the date and quantity logic for delivered order `ORD-000001`; verified that cancelled order `ORD-000036` contributes to cancellation/submitted-order measures but not delivery-service rates.
+- **Power BI:** Connected to PostgreSQL; imported the order-level view, order lines, and the customer, product, and carrier tables; built the relationship model; created seven named KPI measures; and built the Fulfillment Overview, Diagnostic Segments, and Data & Methodology pages.
+- **AI assistance:** Used for schema understanding, SQL review, KPI validation, PostgreSQL troubleshooting, dashboard design review, and documentation support.
 
-## Project brief
+These implementation details are based on the project author's completion report. Repository evidence for manual KPI checks is in [`tests/manual-kpi-validation.md`](../tests/manual-kpi-validation.md).
 
-**Title:** AI-Assisted Order Fulfillment Analytics on a Synthetic Retail Dataset
+## Not implemented
 
-**Question:** How can an operations analyst identify segments in the generated sample that merit investigation and verify the service measures used to communicate them?
+n8n and any other automated ingestion or scheduling are outside this project. The actual pipeline uses manual CSV imports into PostgreSQL. The existing n8n draft is not part of the completed deliverable and should not be described as implemented.
 
-**Scope:** Generated orders, order lines, customers, products, and carriers covering two fictional markets; relational modeling; PostgreSQL loading; data-quality checks; order-level service KPIs; diagnostic segmentation; dashboard design; and AI validation. Workflow automation with n8n is an optional extension.
+## Final items to publish
 
-**Not in scope:** Real company performance, inventory-on-hand, stockouts, supplier lead times, safety stock, reorder points, real carrier evaluation, actual savings, or implemented business change.
-
-## Core build sequence
-
-1. Generate the CSVs using `src/generate_synthetic_dataset.py` and run `src/validate_synthetic_dataset.py`.
-2. Read `docs/synthetic-data-card.md` and `docs/data-dictionary.md`; keep the synthetic disclosure visible.
-3. Create PostgreSQL tables from `sql/01_create_tables.sql` and load dimensions before orders and lines using the documented database setup/import steps.
-4. Run `sql/02_quality_checks.sql`; resolve structural problems before analysis.
-5. Run the committed KPI and segment queries. Verify order-grain logic manually and use checked SQL output as the dashboard source.
-6. Use an AI assistant only for bounded drafting or review. Record what it generated, what you changed, and the independent check in `docs/ai-usage-log.md`.
-7. Build a dashboard with prominent synthetic-data labels and denominators; reconcile its values to SQL.
-8. Write a short case study that describes the technical demonstration without presenting synthetic patterns as real operational findings.
-
-## Optional n8n extension
-
-Skip this while building the core portfolio. If you later choose to implement workflow automation, treat `n8n/csv-to-postgresql.json` and `n8n/workflow-plan.md` as draft reference material only. They are unexecuted and their compatibility with n8n 2.4.6 has not been verified. Update or recreate the workflow for your exact n8n version, then import, execute, and test it before describing it as completed work.
-
-## Project quality bar
-
-A reviewer should be able to regenerate the dataset, understand table grains, rerun SQL, see your independent KPI checks, follow AI validation, and distinguish demonstration data from empirical data. The n8n workflow and fixture-rejection branch are optional and must not be implied to have run unless you actually test them. Detailed instructions are in [`step-by-step-project-instructions.md`](step-by-step-project-instructions.md).
+The actual Power BI report is built, but a `.pbix` file or page screenshots are not present in this repository yet. Add one safe-to-share `.pbix` or sanitized screenshots of the three completed report pages. Then add the actual findings/recommendations from those pages, including the period, comparison, numerator, denominator, and sample volume. Do not invent results or present synthetic patterns as evidence about a real business.

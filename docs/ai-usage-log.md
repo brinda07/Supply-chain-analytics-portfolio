@@ -1,20 +1,29 @@
 # AI Usage and Validation Log
 
-Record actual use only. Do not include confidential data, credentials, or personal information in prompts. Save final prompts and the validated output or link to the relevant commit/query.
+## Author-reported use in this project
 
-| Date / task | Tool | Input / prompt summary | Draft output | Human changes | Validation performed | Outcome / limitation |
-|---|---|---|---|---|---|---|
-| TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+The project author reports using an AI assistant for the following parts of the implementation:
 
-## Example constrained prompt
+- Understanding the schema and data model.
+- Reviewing SQL.
+- Checking KPI definitions and validation logic.
+- Troubleshooting PostgreSQL.
+- Reviewing Power BI dashboard design.
+- Supporting project documentation.
 
-> Use only the schema and metric definitions below. First list missing fields or assumptions. Draft a query to calculate [supported KPI] by [dimension] at [declared grain]. Do not invent columns. Include a validation query that returns the underlying records for a sample of classifications. Explain how nulls, duplicates, and excluded records are handled.
+The specific AI product/model, dates, exact prompts, generated drafts, and per-task human edits were not supplied for this log. This summary records the author's report; it is **not** a prompt-level audit trail and should not be represented as one. Do not backfill dates or prompt wording from memory unless you can verify them.
 
-## Validation checklist
+## How AI was bounded in the project
 
-- [ ] Confirmed the generated code uses real columns and correct join keys.
-- [ ] Checked aggregation grain and prevented duplicate order-header values after joins.
-- [ ] Checked KPI denominator, filters, nulls, dates, and currency handling.
-- [ ] Compared results with an independent SQL/Python calculation or a hand-checked sample.
-- [ ] Reviewed the generated narrative against validated queries and visuals.
-- [ ] Recorded rejected or corrected AI suggestions and why.
+The repository's source files, SQL definitions, manually checked orders, and the author's Power BI report are the evidence for project calculations. AI assistance does not establish that a number is correct. Before publishing a finding, check it against the relevant SQL result or Power BI filter context, verify the numerator and denominator, and keep the synthetic-data limitation visible.
+
+## Validation evidence currently documented
+
+- The generated dataset has a deterministic structural validator: `src/validate_synthetic_dataset.py`.
+- The project includes explicit KPI definitions in `metric-definitions.md`.
+- Manual record checks for `ORD-000001` and `ORD-000036` are documented in `../tests/manual-kpi-validation.md`.
+- The author reports running the SQL analyses and creating the corresponding Power BI measures and pages.
+
+## Optional prompt-level audit additions
+
+If you still have access to the original AI sessions and want a more detailed audit, add a dated entry for each material task with the tool/model, a short prompt summary, what was accepted or changed, and the independent check. Exclude credentials, personal information, and private database connection details.

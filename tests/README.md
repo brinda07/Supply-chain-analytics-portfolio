@@ -1,22 +1,17 @@
 # Tests and Validation Evidence
 
-## Current automated structural check
+## Completed checks reported by the project author
 
-From the repository root:
+- Synthetic dataset generation and structural validation.
+- Execution of `02_quality_checks.sql` and the project's KPI, diagnostic, and view-creation SQL files in PostgreSQL.
+- Manual KPI checks for delivered order `ORD-000001` and cancelled order `ORD-000036`.
 
-```bash
-python3 src/validate_synthetic_dataset.py
-```
+The repository includes the [manual KPI validation note](manual-kpi-validation.md), which shows the source dates, line quantities, expected classifications, and reproducible SQL. The committed Python validator checks CSV structure and data rules; it does not independently calculate service KPI values.
 
-This checks the generated CSV schemas, unique keys, foreign-key relationships, market/currency consistency, date validity, and quantity rules. It does not calculate service KPI results.
+## Database and dashboard result evidence
 
-## Core evidence
+The author reports creating the PostgreSQL tables/view and Power BI model, measures, and pages. Query-result exports, screenshots, and the `.pbix` report are not in the repository yet. Add a safe-to-share Power BI file or sanitized screenshots under `dashboard/` as described in [`dashboard/README.md`](../dashboard/README.md). If you have already reconciled each Power BI measure to SQL, record the filters and matching values; otherwise perform that comparison before claiming reconciliation.
 
-- [Manual KPI validation evidence](manual-kpi-validation.md): delivered order `ORD-000001` and cancelled order `ORD-000036`, checked against the generated CSVs.
-- PostgreSQL row-count and quality-check results.
-- Reconciliation between SQL KPI outputs and the dashboard.
-- Any regression test added for repeat loads or idempotency.
+## Not implemented
 
-Optional only: if you implement the n8n extension, record fixture outcomes and rejected-row reasons here. Do not describe n8n tests as completed unless you executed them against your configured workflow and database.
-
-Keep evidence reproducible, not only screenshots. Do not put credentials or real personal data in test output.
+n8n fixture-rejection, load-audit automation, and repeat-load automation were not implemented. Do not list those as completed tests. The invalid fixture CSVs remain optional test inputs and must never be loaded into the analytical tables or included in KPI calculations.
