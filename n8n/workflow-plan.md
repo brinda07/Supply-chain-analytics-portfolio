@@ -12,4 +12,4 @@ Do not spend time importing or debugging this optional export while completing t
 
 ## Optional future test scope
 
-If you implement the extension later, use only the synthetic clean files for successful loads and keep `data/fixtures/` out of analytical tables. Verify the accepted/rejected counts, database row counts, constraint behavior, and duplicate-load handling. Store credentials in n8n’s credential manager, never in the exported JSON or Git.
+If you implement the extension later, use only the synthetic clean files for successful loads. Verify accepted counts, database row counts, constraint behavior, and duplicate-load handling. If you design rejection tests, keep any invalid-input test files outside analytical tables. Store credentials in n8n’s credential manager, never in the exported JSON or Git.

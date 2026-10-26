@@ -75,7 +75,7 @@ Counts are expected for generator seed `20261023`; regenerate through the script
 
 ## Data quality expectations
 
-The primary synthetic files are intentionally generated as a clean, relational exercise. Verify key uniqueness, valid types, foreign-key joins, currency-market consistency, date order, and order/line reconciliation. `data/fixtures/orders_validation_fixture.csv` and `data/fixtures/order_lines_validation_fixture.csv` intentionally contain invalid rows (duplicates, malformed values, and orphan keys). They are optional inputs for a separate ingestion-rejection test; the completed project did not implement n8n automation. Do not merge these fixtures into the clean analytical tables or KPI analysis.
+The primary synthetic files are intentionally generated as a clean, relational exercise. Verify key uniqueness, valid types, foreign-key joins, currency-market consistency, date order, and order/line reconciliation. Keep analytical tables and KPI analysis limited to clean generated files from `data/synthetic/`.
 
 ## Important exclusions
 

@@ -11,7 +11,7 @@
 
 ## Implemented workflow
 
-1. Generated five reproducible synthetic CSV files and validation fixtures.
+1. Generated five reproducible synthetic CSV files and a dataset manifest.
 2. Ran structural validation on the generated dataset.
 3. Installed PostgreSQL, created the `supply_chain_portfolio` database, and created the `supply_chain` schema and tables.
 4. Imported `customers.csv`, `products.csv`, `carriers.csv`, `orders.csv`, and `order_lines.csv`.

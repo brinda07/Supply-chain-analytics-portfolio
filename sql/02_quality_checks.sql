@@ -46,5 +46,5 @@ SELECT COUNT(*) AS quantities_overdelivered
 FROM supply_chain.order_lines
 WHERE delivered_qty > ordered_qty;
 
--- The intentional validation fixtures are CSV files, not to be loaded into
--- the analytical schema. Testing an n8n rejection branch is optional.
+-- Load only the clean synthetic files into the analytical schema.
+-- Testing an n8n rejection branch is optional and separate from this SQL flow.

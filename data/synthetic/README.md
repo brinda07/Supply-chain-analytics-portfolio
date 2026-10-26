@@ -21,4 +21,4 @@ The generator uses Python’s standard library and seed `20261023`.
 
 Date coverage is January 2025 through June 2026. The synthetic schema includes order, promise, and delivery dates plus ordered/delivered quantities for practicing fulfillment calculations. It does not include inventory balances, replenishment, suppliers, or real carrier events. USD and INR values are local synthetic prices and must not be aggregated as one currency.
 
-Invalid test inputs are kept separately in `data/fixtures/`. Never load them into analytical tables. See `docs/synthetic-data-card.md` for the generation approach and disclosure language.
+Use only the files in this folder for analytical table loads and KPI calculations. See `docs/synthetic-data-card.md` for the generation approach and disclosure language.

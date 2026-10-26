@@ -14,4 +14,4 @@ The author reports creating the PostgreSQL tables/view and Power BI model, measu
 
 ## Not implemented
 
-n8n fixture-rejection, load-audit automation, and repeat-load automation were not implemented. Do not list those as completed tests. The invalid fixture CSVs remain optional test inputs and must never be loaded into the analytical tables or included in KPI calculations.
+n8n load-audit automation and repeat-load automation were not implemented. Do not list those as completed tests. Analytical tables and KPI calculations should use only the clean generated files under `data/synthetic/`.
