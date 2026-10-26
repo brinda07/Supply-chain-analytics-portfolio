@@ -44,16 +44,6 @@ This project uses a deterministic, fully synthetic dataset generated in the repo
 **Tools:** Python · PostgreSQL 18 · SQL · Power BI · AI assistant. **Automation:** not implemented.
 **Status:** Core data, database, SQL, manual-check, and Power BI implementation complete. Final findings/recommendations and dashboard files still need to be added to this repository.
 
-- [Understand the project and write findings](docs/project-explainer.md)
-- [Read the project brief](docs/project-brief.md)
-- [Review KPI definitions](docs/metric-definitions.md)
-- [Review manual KPI validation examples](tests/manual-kpi-validation.md)
-- [Database setup and executed SQL steps](docs/database_setup.md)
-- [Power BI files and publication checklist](dashboard/README.md)
-- [Step-by-step reproducibility guide](docs/step-by-step-project-instructions.md)
-- [Synthetic-data card](docs/synthetic-data-card.md)
-- [Deterministic data generator](src/generate_synthetic_dataset.py)
-
 
 ## Portfolio Roadmap
 
