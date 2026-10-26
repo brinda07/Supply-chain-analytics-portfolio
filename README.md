@@ -24,7 +24,7 @@ I’m currently building toward **Supply Chain Analyst internship opportunities*
 
 ### Project 3 · AI-Assisted Order Fulfillment Analytics on Synthetic Data
 
-This project uses a deterministic, fully synthetic dataset generated in the repository, so it does not redistribute the tutorial creator’s restricted files. It demonstrates a complete analyst workflow from reproducible data generation through SQL-based KPI analysis and a Power BI dashboard. The business, customers, products, carriers, orders, prices, and delivery events are fictional.
+This project uses a deterministic, fully synthetic dataset generated in the repository. It demonstrates a complete analyst workflow from reproducible data generation through SQL-based KPI analysis and a Power BI dashboard. The business, customers, products, carriers, orders, prices, and delivery events are fictional.
 
 **Implemented workflow**
 
