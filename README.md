@@ -16,7 +16,7 @@
 
 ## Hi, I’m Brinda
 
-This portfolio showcases supply chain analytics projects using Python, SQL, Power BI, HTML, Plotly, and business-focused planning methods. My goal is to demonstrate how raw operational data can be transformed into useful insights for demand planning, inventory decisions, order fulfillment, and operations.
+This portfolio showcases supply chain analytics projects using Python, PostgreSQL, Power BI and business-focused planning methods. My goal is to demonstrate how raw operational data can be transformed into useful insights for demand planning, inventory decisions, order fulfillment, and operations.
 
 I’m currently building toward **Supply Chain Analyst internship opportunities**. Project results and implementation status are identified below; planned work is not presented as completed work.
 
