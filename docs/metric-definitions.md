@@ -21,7 +21,7 @@ These measures are computable from the generated schema when implemented as spec
 - OTIF is the direct intersection of those two order-level flags; do not estimate it by multiplying separate overall rates.
 - Show the number of eligible orders whenever a percentage is shown. Rates with different eligibility denominators are not directly comparable.
 - Use the order date for cohort month unless the chart explicitly says otherwise. Do not mix order-month and delivery-month groupings.
-- The test fixtures contain intentional errors and must never be used in KPI calculations.
+- KPI calculations should use only the clean generated tables loaded from `data/synthetic/`.
 
 ## Synthetic-data interpretation warning
 
