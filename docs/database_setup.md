@@ -1,6 +1,6 @@
 # Database and Power BI Implementation Record
 
-This file records the implementation reported by the project author and provides a reproducibility reference. Do not commit database passwords or connection strings.
+This file records the implementation record and provides a reproducibility reference. Do not commit database passwords or connection strings.
 
 ## Environment
 
