@@ -73,9 +73,6 @@ Counts are expected for generator seed `20261023`; regenerate through the script
 | `carrier_name` | Text | Generic fictional label. |
 | `market` | Category | `US` or `IN`. |
 
-## Data quality expectations
-
-The primary synthetic files are intentionally generated as a clean, relational exercise. Verify key uniqueness, valid types, foreign-key joins, currency-market consistency, date order, and order/line reconciliation. Keep analytical tables and KPI analysis limited to clean generated files from `data/synthetic/`.
 
 ## Important exclusions
 
