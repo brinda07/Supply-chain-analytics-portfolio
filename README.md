@@ -37,10 +37,7 @@ This project uses a deterministic, fully synthetic dataset generated in the repo
 - Executed `01_create_tables.sql`, `02_quality_checks.sql`, `03_fulfillment_kpis.sql`, `04_segment_diagnostics.sql`, and `05_dashboard_views.sql`; created the one-row-per-order `order_service` view.
 - Manually checked `ORD-000001` and `ORD-000036` for on-time, in-full, OTIF, and cancellation treatment.
 - Connected Power BI to PostgreSQL, loaded `order_service`, `order_lines`, `customers`, `products`, and `carriers`, built the relationship model and seven named KPI measures, and created three report pages: **Fulfillment Overview**, **Diagnostic Segments**, and **Data & Methodology**.
-- Used AI assistance for schema understanding, SQL review, KPI validation, PostgreSQL troubleshooting, dashboard design review, and documentation support; analytical claims remain subject to human verification.
 
-
-**What still needs your input for a reviewer-ready repo:** add the actual Power BI `.pbix` file or sanitized screenshots of its three pages, then write your findings and recommendations using the values and denominators in your dashboard. Those visual artifacts and result-specific conclusions are not currently stored in this repository.
 
 **Data disclosure:** All records are fictional; delivery and partial-fulfillment variation is programmed by the generator. Dashboard results describe this synthetic sample only; they are not empirical findings, industry benchmarks, causal evidence, or real business performance. The dataset has no inventory-on-hand or replenishment history, so this is not inventory optimization.
 
@@ -57,9 +54,6 @@ This project uses a deterministic, fully synthetic dataset generated in the repo
 - [Synthetic-data card](docs/synthetic-data-card.md)
 - [Deterministic data generator](src/generate_synthetic_dataset.py)
 
-An older, unexecuted n8n workflow draft remains under `n8n/` for reference only; it is not part of this implementation.
-
----
 
 ## Portfolio Roadmap
 
