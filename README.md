@@ -1,6 +1,6 @@
 <div align="center">
 
-# Supply Chain Analytics Portfolio
+# Supply Chain Analytics Projects
 
 **Demand planning · Inventory optimization · Fulfillment analytics**
 
